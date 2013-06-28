@@ -11,7 +11,35 @@ echo str_repeat($definition,$multiplier);
 }
 
 
+$hhb_curl_domainCache="";
+function hhb_curl_exec($ch,$url){
+global $hhb_curl_domainCache="";//
+//$hhb_curl_domainCache=&$this->hhb_curl_domainCache;
+//$ch=&$this->curlh;
+$tmpvar="";
+if(parse_url($url,PHP_URL_HOST)===null)
+{
+if(substr($url,0,1)!=='/'){
+$url=$hhb_curl_domainCache.'/'.$url;
+} else {
+$url=$hhb_curl_domainCache.$url;
+}
+};
 
+curl_setopt($ch, CURLOPT_URL, $url);
+$html=curl_exec($ch);
+if(curl_errno($ch))
+{
+	throw new Exception('Curl error (curl_errno='.curl_errno($ch).') on url '.var_export($url,true).': '.curl_error($ch));
+	//    echo 'Curl error: ' . curl_error($ch);
+}
+	if($html==='' && 203!= ($tmpvar=curl_getinfo($ch,CURLINFO_HTTP_CODE))/*203 is "success, but no output"..*/){
+	throw new Exception('Curl returned nothing for '.var_export($url,true).' but HTTP_RESPONSE_CODE was '.var_export($tmpvar,true));
+	};
+	//remember that curl (usually) auto-follows the "Location: " http redirects.. 
+	$hhb_curl_domainCache=parse_url(curl_getinfo($ch,CURLINFO_EFFECTIVE_URL),PHP_URL_HOST);
+	return $html;
+}
 
 
 
