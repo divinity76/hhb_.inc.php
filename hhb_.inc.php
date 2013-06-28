@@ -11,6 +11,43 @@ echo str_repeat($definition,$multiplier);
 }
 
 
+
+
+
+
+
+
+function hhb_curl_init($custom_options_array=array())
+{
+if(!is_array($custom_options_array)){throw new InvalidArgumentException('$custom_options_array must be an array!');};
+$options_array=array(
+CURLOPT_AUTOREFERER=>true,
+CURLOPT_BINARYTRANSFER=>true,
+CURLOPT_COOKIESESSION=>true,
+CURLOPT_FOLLOWLOCATION=>true,
+CURLOPT_FORBID_REUSE=>false,
+CURLOPT_HTTPGET=>true,
+CURLOPT_RETURNTRANSFER=>true,
+CURLOPT_SSL_VERIFYPEER=>false,
+CURLOPT_CONNECTTIMEOUT=>10,
+CURLOPT_TIMEOUT=>11,
+//CURLOPT_REFERER=>'hanshenrik.tk',
+);
+if(!array_key_exists(CURLOPT_COOKIEFILE,$custom_options_array))
+{
+$options_array[CURLOPT_COOKIEFILE]=tmpfile();
+}
+//we can't use array_merge() because of how it handles integer-keys, it would/could cause corruption
+foreach($custom_options_array as $key=>$val)
+{
+$options_array[$key]=$val;
+}
+unset($key,$val,$custom_options_array);
+$curl=curl_init();
+curl_setopt_array($curl,$options_array);
+return $curl;
+}
+
 $hhb_curl_domainCache="";
 function hhb_curl_exec($ch,$url){
 global $hhb_curl_domainCache="";//
