@@ -15,6 +15,12 @@ echo str_repeat($definition,$multiplier);
 
 
 function hhb_curl_init($custom_options_array = array()) {
+	if(empty($custom_options_array)){
+	$custom_options_array=array();
+	//i feel kinda bad about this.. argv[1] of curl_init wants a string(url), or NULL
+	//at least i want to allow NULL aswell :/
+	}
+	}
     if (!is_array($custom_options_array)) {
         throw new InvalidArgumentException('$custom_options_array must be an array!');
     };
