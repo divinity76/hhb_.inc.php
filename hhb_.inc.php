@@ -82,34 +82,33 @@ function hhb_curl_exec($ch, $url) {
 
 
 
-
-
 function hhb_var_dump() {
   //informative wrapper for var_dump
   //<changelog>
-  //version 5 ( 1372431407891 )
-    //v5, fixed warnings on PHP < 5.0.2 (PHP_EOL not defined) (although we do not undefine("PHP_EOL") .. not sure how to do that :( ),
+  //version 5 ( 1372510379573 )
+    //v5, fixed warnings on PHP < 5.0.2 (PHP_EOL not defined),
   //also we can use xdebug_var_dump when available now. tested working with 5.0.0 to 5.5.0beta2 (thanks to http://viper-7.com and http://3v4l.org )
     //and fixed a (corner-case) bug with "0" (empty() considders string("0") to be empty, this caused a bug in sourcecode analyze)
   //v4, now (tries to) tell you the source code that lead to the variables
     //v3, HHB_VAR_DUMP_START and HHB_VAR_DUMP_END .
     //v2, now compat with.. PHP5.0 + i think? tested down to 5.2.17 (previously only 5.4.0+ worked)
-	//</changelog>
-	//<settings>
-	$settings=array();
-	if(!defined('PHP_EOL')){//for PHP <5.0.2
-	$we_defined_PHP_EOL=true;
-	define('PHP_EOL',"\n");
-	}
+//</changelog>
+//<settings>
+$settings=array();
+$PHP_EOL="\n";
+if(defined('PHP_EOL')){//for PHP <5.0.2 ...
+$PHP_EOL=PHP_EOL;
+}
+
     $settings['debug_hhb_var_dump'] = false; //if true, may throw exceptions on errors..
-	$settings['use_xdebug_var_dump']=true;//try to use xdebug_var_dump (instead of var_dump) if available?
+$settings['use_xdebug_var_dump']=true;//try to use xdebug_var_dump (instead of var_dump) if available?
     $settings['analyze_sourcecode'] = true; //false to disable the source code analyze stuff.
     //(it will fallback to making $settings['analyze_sourcecode']=false, if it fail to analyze the code, anyway..)
-    $settings['hhb_var_dump_prepend'] = 'HHB_VAR_DUMP_START'.PHP_EOL;
-    $settings['hhb_var_dump_append'] = 'HHB_VAR_DUMP_END'.PHP_EOL;
-	//</settings>
-	
-	$settings['use_xdebug_var_dump']=($settings['use_xdebug_var_dump'] && is_callable("xdebug_var_dump"));
+    $settings['hhb_var_dump_prepend'] = 'HHB_VAR_DUMP_START'.$PHP_EOL;
+    $settings['hhb_var_dump_append'] = 'HHB_VAR_DUMP_END'.$PHP_EOL;
+//</settings>
+
+$settings['use_xdebug_var_dump']=($settings['use_xdebug_var_dump'] && is_callable("xdebug_var_dump"));
     $argv = func_get_args();
     $argc = count($argv, COUNT_NORMAL);
     if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
@@ -125,9 +124,9 @@ function hhb_var_dump() {
     //later, $analyze_sourcecode will be compared with $config['analyze_sourcecode']
     //to determine if the reason was an error analyzing, or if it was disabled..
     $bt = $bt[0];
-	//<analyzeSourceCode>
-    if ($analyze_sourcecode) 
-	{
+//<analyzeSourceCode>
+    if ($analyze_sourcecode)
+{
         $argvSourceCode = array(0 => 'ignore [0]...');
         try {
             if (version_compare(PHP_VERSION, '5.2.2', '<')) {
@@ -140,7 +139,7 @@ function hhb_var_dump() {
             $xsource.= "\n<".'?'.'php ignore_this_hhb_var_dump_workaround();'; //workaround, making sure that at least 1 token is an array, and has the $tok[2] >= line of hhb_var_dump
             $xTokenArray = token_get_all($xsource);
             //<trim$xTokenArray>
-			$tmpstr='';
+$tmpstr='';
             $tmpUnsetKeyArray = array();
             ForEach($xTokenArray as $xKey => $xToken) {
                 if (is_array($xToken)) {
@@ -210,16 +209,16 @@ function hhb_var_dump() {
             if ($lastInterestingLineTokenKey <= -1) {
                 throw new Exception('3unable to find $lastInterestingLineTokenKey !');
             };
-			unset($xKey,$xToken,$tmpkey);
+unset($xKey,$xToken,$tmpkey);
             //</find$lastInterestingLineTokenKey>
-			//<find$firstInterestingLineTokenKey>
-            //now work ourselves backwards from $lastInterestingLineTokenKey  to the first token where $xTokenArray[$tmpi][1] == "hhb_var_dump"
-            //i doubt this is fool-proof but.. cant think of a better way (in userland, anyway)  atm..
+//<find$firstInterestingLineTokenKey>
+            //now work ourselves backwards from $lastInterestingLineTokenKey to the first token where $xTokenArray[$tmpi][1] == "hhb_var_dump"
+            //i doubt this is fool-proof but.. cant think of a better way (in userland, anyway) atm..
             $tmpi = $lastInterestingLineTokenKey;
             do {
                 if (array_key_exists($tmpi, $xTokenArray) && is_array($xTokenArray[$tmpi]) && array_key_exists(1, $xTokenArray[$tmpi]) && is_string($xTokenArray[$tmpi][1]) && strcasecmp($xTokenArray[$tmpi][1], $bt['function']) === 0) {
                     //var_dump(__LINE__."SUCCESS WITH",$tmpi,$xTokenArray[$tmpi]);
-                    if (!array_key_exists($tmpi + 2, $xTokenArray)) { //+2 because [0] is (or should be) "hhb_var_dump"  and [1] is (or should be) "("
+                    if (!array_key_exists($tmpi + 2, $xTokenArray)) { //+2 because [0] is (or should be) "hhb_var_dump" and [1] is (or should be) "("
                         throw new Exception('1unable to find the $firstInterestingLineTokenKey...');
                     };
                     $firstInterestingLineTokenKey = $tmpi + 2;
@@ -232,10 +231,10 @@ function hhb_var_dump() {
             if ($firstInterestingLineTokenKey <= -1) {
                 throw new Exception('2unable to find the $firstInterestingLineTokenKey...');
             };
-			unset($tmpi);
+unset($tmpi);
             //Note: $lastInterestingLineTokeyKey is likely to contain more stuff than only the stuff we want..
-			//</find$firstInterestingLineTokenKey>
-			//<rebuildInterestingSourceCode>
+//</find$firstInterestingLineTokenKey>
+//<rebuildInterestingSourceCode>
             //ok, now we have $firstInterestingLineTokenKey and $lastInterestingLineTokenKey....
             $interestingTokensArray = array_slice($xTokenArray, $firstInterestingLineTokenKey, (($lastInterestingLineTokenKey - $firstInterestingLineTokenKey) + 1));
             unset($addUntil, $tmpi, $tmpstr,$tmpi,$argvsourcestr, $tmpkey,$xTokenKey,$xToken);
@@ -253,7 +252,7 @@ function hhb_var_dump() {
                     $tmpstr = $xToken;
                     //var_dump($xToken);
                 } else { /*should never reach this */
-                    throw new LogicException('Impossible situation? $xToken fails is_array() and fails  is_string() ...');
+                    throw new LogicException('Impossible situation? $xToken fails is_array() and fails is_string() ...');
                 };
                 $argvsourcestr.= $tmpstr;
                 if ($xToken === '(') {
@@ -262,7 +261,7 @@ function hhb_var_dump() {
                 };
                 if ($xToken === ')') {
                     if (false === ($tmpkey = array_search(')', $addUntil, false))) {
-                        $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the ")"	
+                        $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the ")"
                         if (count($argvSourceCode, COUNT_NORMAL) - 1 === $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
                             break; /*We read em all! :D (.. i hope)*/
                         };
@@ -283,7 +282,7 @@ function hhb_var_dump() {
             if (count($argvSourceCode, COUNT_NORMAL) - 1 != $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
                 throw new Exception('failed to read source code of all the arguments! (and idk which ones i missed)! sorry..');
             };
-			//</rebuildInterestingSourceCode>
+//</rebuildInterestingSourceCode>
         } catch (Exception $ex) {
             $argvSourceCode = array(); //clear it
             //TODO: failed to read source code
@@ -294,22 +293,22 @@ function hhb_var_dump() {
             } else {/*exception ignored, continue as normal without $analyze_sourcecode */};
         }
         unset($xsource, $xToken, $xTokenArray, $firstInterestingLineTokenKey, $lastInterestingLineTokenKey, $xTokenKey, $tmpi, $tmpkey,$argvsourcestr);
-	};
+};
     //</analyzeSourceCode>
     $msg = $settings['hhb_var_dump_prepend'];
     if ($analyze_sourcecode != $settings['analyze_sourcecode']) {
-        $msg.= ' (PS: some error analyzing source code)'.PHP_EOL;
+        $msg.= ' (PS: some error analyzing source code)'.$PHP_EOL;
     };
     $msg.=
     'in "'.$bt['file'].
     '": on line "'.$bt['line'].
     '": '.$argc.
     ' variable'.($argc === 1 ? '' : 's') //because over-engineering ftw?
-        .PHP_EOL;
+        .$PHP_EOL;
     if ($analyze_sourcecode) {
         $msg.= ' hhb_var_dump(';
         $msg.= implode(",", array_slice($argvSourceCode, 1));//$argvSourceCode[0] is bullshit.
-        $msg.= ')'.PHP_EOL;
+        $msg.= ')'.$PHP_EOL;
     }
     //array_unshift($bt,$msg);
     echo $msg;
