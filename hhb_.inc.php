@@ -58,8 +58,7 @@ function hhb_curl_exec($ch, $url) {
     $tmpvar = "";
     if (parse_url($url, PHP_URL_HOST) === null) {
         if (substr($url, 0, 1) !== '/') {
-            $url = $hhb_curl_domainCache.
-            '/'.$url;
+            $url = $hhb_curl_domainCache.'/'.$url;
         } else {
             $url = $hhb_curl_domainCache.$url;
         }
