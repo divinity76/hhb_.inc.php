@@ -96,7 +96,7 @@ function hhb_var_dump() {
 //<settings>
 $settings=array();
 $PHP_EOL="\n";
-if(defined('PHP_EOL')){//for PHP <5.0.2 ...
+if(defined('PHP_EOL')){//for PHP >=5.0.2 ...
 $PHP_EOL=PHP_EOL;
 }
 
