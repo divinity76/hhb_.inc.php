@@ -1,8 +1,8 @@
 <?php
 //all this stuff is...
-// Copyright © 1970-1991 by Urabe Mikoto
-// Copyright © 1991-1995 by Bikko
-//all copyright is expired (and fictional) 
+// Copyright c 1970-1991 by Urabe Mikoto
+// Copyright c 1991-1995 by Bikko
+//all copyright is expired (and fictional)
 //so don't worry about it :-)
 
 function hhb_br(/*int*/$multiplier=1,/*string*/$definition="<br/>\n")
@@ -17,30 +17,30 @@ echo str_repeat($definition,$multiplier);
 function hhb_curl_init($custom_options_array = array()) {
     if(empty($custom_options_array)){
         $custom_options_array=array();
-	//i feel kinda bad about this.. argv[1] of curl_init wants a string(url), or NULL
-	//at least i want to allow NULL aswell :/
+//i feel kinda bad about this.. argv[1] of curl_init wants a string(url), or NULL
+//at least i want to allow NULL aswell :/
     }
     if (!is_array($custom_options_array)) {
         throw new InvalidArgumentException('$custom_options_array must be an array!');
     };
     $options_array = array(
-        CURLOPT_AUTOREFERER = > true,
-        CURLOPT_BINARYTRANSFER = > true,
-        CURLOPT_COOKIESESSION = > true,
-        CURLOPT_FOLLOWLOCATION = > true,
-        CURLOPT_FORBID_REUSE = > false,
-        CURLOPT_HTTPGET = > true,
-        CURLOPT_RETURNTRANSFER = > true,
-        CURLOPT_SSL_VERIFYPEER = > false,
-        CURLOPT_CONNECTTIMEOUT = > 10,
-        CURLOPT_TIMEOUT = > 11,
+        CURLOPT_AUTOREFERER => true,
+        CURLOPT_BINARYTRANSFER => true,
+        CURLOPT_COOKIESESSION => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_FORBID_REUSE => false,
+        CURLOPT_HTTPGET => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_TIMEOUT => 11,
         //CURLOPT_REFERER=>'hanshenrik.tk',
     );
     if (!array_key_exists(CURLOPT_COOKIEFILE, $custom_options_array)) {
         $options_array[CURLOPT_COOKIEFILE] = tmpfile();
     }
     //we can't use array_merge() because of how it handles integer-keys, it would/could cause corruption
-    foreach($custom_options_array as $key = > $val) {
+    foreach($custom_options_array as $key => $val) {
         $options_array[$key] = $val;
     }
     unset($key, $val, $custom_options_array);
@@ -68,12 +68,12 @@ function hhb_curl_exec($ch, $url) {
     $html = curl_exec($ch);
     if (curl_errno($ch)) {
         throw new Exception('Curl error (curl_errno='.curl_errno($ch).') on url '.var_export($url, true).': '.curl_error($ch));
-        //    echo 'Curl error: ' . curl_error($ch);
+        // echo 'Curl error: ' . curl_error($ch);
     }
     if ($html === '' && 203 != ($tmpvar = curl_getinfo($ch, CURLINFO_HTTP_CODE)) /*203 is "success, but no output"..*/ ) {
         throw new Exception('Curl returned nothing for '.var_export($url, true).' but HTTP_RESPONSE_CODE was '.var_export($tmpvar, true));
     };
-    //remember that curl (usually) auto-follows the "Location: " http redirects.. 
+    //remember that curl (usually) auto-follows the "Location: " http redirects..
     $hhb_curl_domainCache = parse_url(curl_getinfo($ch, CURLINFO_EFFECTIVE_URL), PHP_URL_HOST);
     return $html;
 }
