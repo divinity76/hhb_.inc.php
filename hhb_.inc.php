@@ -255,12 +255,18 @@ unset($tmpi);
                     throw new LogicException('Impossible situation? $xToken fails is_array() and fails is_string() ...');
                 };
                 $argvsourcestr.= $tmpstr;
-                if ($xToken === '(') {
-                    $addUntil[] = ')';
+    			
+
+                if ($xToken === '('){
+						$addUntil[]=')';
+					}
+					else if ($xToken==='[') {
+                    $addUntil[] = ']';
                     continue;
                 };
-                if ($xToken === ')') {
-                    if (false === ($tmpkey = array_search(')', $addUntil, false))) {
+				
+                if ($xToken === ')' || $xToken===']') {
+                    if (false === ($tmpkey = array_search($xToken, $addUntil, false)) ) {
                         $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the ")"
                         if (count($argvSourceCode, COUNT_NORMAL) - 1 === $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
                             break; /*We read em all! :D (.. i hope)*/
@@ -271,6 +277,7 @@ unset($tmpi);
                     unset($addUntil[$tmpkey]);
                     continue;
                 }
+				
                 if (empty($addUntil) && $xToken === ','){
                     $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the comma
                     $argvsourcestr = "";
@@ -303,8 +310,7 @@ unset($tmpi);
     'in "'.$bt['file'].
     '": on line "'.$bt['line'].
     '": '.$argc.
-    ' variable'.($argc === 1 ? '' : 's') //because over-engineering ftw?
-        .$PHP_EOL;
+    ' variable'.($argc === 1 ? '' : 's').$PHP_EOL; //because over-engineering ftw?
     if ($analyze_sourcecode) {
         $msg.= ' hhb_var_dump(';
         $msg.= implode(",", array_slice($argvSourceCode, 1));//$argvSourceCode[0] is bullshit.
