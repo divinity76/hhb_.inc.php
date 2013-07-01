@@ -255,10 +255,11 @@ unset($tmpi);
                     throw new LogicException('Impossible situation? $xToken fails is_array() and fails is_string() ...');
                 };
                 $argvsourcestr.= $tmpstr;
-    			
+				
 
                 if ($xToken === '('){
 						$addUntil[]=')';
+						continue;
 					}
 					else if ($xToken==='[') {
                     $addUntil[] = ']';
