@@ -143,6 +143,9 @@ $tmpstr='';
             $tmpUnsetKeyArray = array();
             ForEach($xTokenArray as $xKey => $xToken) {
                 if (is_array($xToken)) {
+                    if(!array_key_exists(1,$xToken)){
+                    	throw new LogicException('Impossible situation? $xToken is_array, but does not have $xToken[1] ...');
+                    }                
                     $tmpstr = trim($xToken[1]);
                     if (empty($tmpstr) && $tmpstr!=='0'/*string("0") is considered "empty" -.-*/) {
                         $tmpUnsetKeyArray[] = $xKey;
