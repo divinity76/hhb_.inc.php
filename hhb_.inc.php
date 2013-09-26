@@ -37,7 +37,13 @@ function hhb_curl_init($custom_options_array = array()) {
         //CURLOPT_REFERER=>'hanshenrik.tk',
     );
     if (!array_key_exists(CURLOPT_COOKIEFILE, $custom_options_array)) {
-        $options_array[CURLOPT_COOKIEFILE] = tmpfile();
+    	//do this only conditionally because tmpfile() call..
+	//we want PHP5.3- support -.-
+	//for 5.4, just: $options_array[CURLOPT_COOKIEFILE]=stream_get_meta_data(tmpfile())['uri'];
+	 $options_array[CURLOPT_COOKIEFILE] = tmpfile();
+	 $options_array[CURLOPT_COOKIEFILE] =stream_get_meta_data($options_array[CURLOPT_COOKIEFILE]);
+	 $options_array[CURLOPT_COOKIEFILE]=$options_array[CURLOPT_COOKIEFILE]['uri']; 
+
     }
     //we can't use array_merge() because of how it handles integer-keys, it would/could cause corruption
     foreach($custom_options_array as $key => $val) {
