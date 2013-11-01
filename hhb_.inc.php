@@ -64,7 +64,7 @@ function hhb_curl_exec($ch, $url) {
 	{
 		throw new InvalidArgumentException('$ch must be a curl handle!');
 	}
-	if(!is_string($ch))
+	if(!is_string($url))
 	{
 		throw new InvalidArgumentException('$url must be a string!');
 	}
