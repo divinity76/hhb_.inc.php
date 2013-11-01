@@ -38,9 +38,8 @@ function hhb_curl_init($custom_options_array = array()) {
     );
     if (!array_key_exists(CURLOPT_COOKIEFILE, $custom_options_array)) {
     	//do this only conditionally because tmpfile() call..
-	//we want PHP5.3- support -.-
-	//for 5.4, just: $options_array[CURLOPT_COOKIEFILE]=stream_get_meta_data(tmpfile())['uri'];
-	 $options_array[CURLOPT_COOKIEFILE] = tmpfile();
+    	 static $curl_cookiefiles_arr=array();//workaround for https://bugs.php.net/bug.php?id=66014
+	 $curl_cookiefiles_arr[]=$options_array[CURLOPT_COOKIEFILE] = tmpfile();
 	 $options_array[CURLOPT_COOKIEFILE] =stream_get_meta_data($options_array[CURLOPT_COOKIEFILE]);
 	 $options_array[CURLOPT_COOKIEFILE]=$options_array[CURLOPT_COOKIEFILE]['uri']; 
 
