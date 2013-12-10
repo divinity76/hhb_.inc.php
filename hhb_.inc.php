@@ -34,6 +34,7 @@ function hhb_curl_init($custom_options_array = array()) {
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 11,
+        CURLOPT_ENCODING=>"",
         //CURLOPT_REFERER=>'hanshenrik.tk',
     );
     if (!array_key_exists(CURLOPT_COOKIEFILE, $custom_options_array)) {
