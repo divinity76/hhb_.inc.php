@@ -35,7 +35,8 @@ function hhb_curl_init($custom_options_array = array()) {
         CURLOPT_CONNECTTIMEOUT => 10,
         CURLOPT_TIMEOUT => 11,
         CURLOPT_ENCODING=>"",
-        //CURLOPT_REFERER=>'hanshenrik.tk',
+        //CURLOPT_REFERER=>'example.org',
+        //CURLOPT_USERAGE=>'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.146 Safari/537.36'
     );
     if (!array_key_exists(CURLOPT_COOKIEFILE, $custom_options_array)) {
     	//do this only conditionally because tmpfile() call..
