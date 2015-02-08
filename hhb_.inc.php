@@ -362,3 +362,29 @@ function hhb_return_var_dump() { //works like var_dump, but returns a string ins
     call_user_func_array('var_dump', $args);
     return ob_get_clean();
 };
+
+function bin2readable($data,$min_text_len=3,$readable_min=0x40,$readable_max=0x7E){
+	$ret="";
+	$strbuf="";
+	$i=0;
+	for($i=0;$i<strlen($data);++$i){
+		if( $min_text_len>0 && ord($data[$i])>=$readable_min && ord($data[$i])<=$readable_max){
+			$strbuf.=$data[$i];
+			continue;
+		}
+	if(strlen($strbuf)>=$min_text_len && $min_text_len>0){
+		$ret.=" ".$strbuf." ";
+	} elseif(strlen($strbuf)>0 && $min_text_len>0){
+		$ret.=bin2hex($strbuf);
+	}
+	$strbuf="";
+	$ret.=bin2hex($data[$i]);
+	}
+	if(strlen($strbuf)>=$min_text_len && $min_text_len>0){
+		$ret.=" ".$strbuf." ";
+	} elseif(strlen($strbuf)>0 && $min_text_len>0){
+		$ret.=bin2hex($strbuf);
+	}
+	$strbuf="";
+	return $ret;
+}
