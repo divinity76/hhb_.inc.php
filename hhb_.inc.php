@@ -1,9 +1,4 @@
 <?php
-//all this stuff is...
-// Copyright c 1970-1991 by Urabe Mikoto
-// Copyright c 1991-1995 by Bikko
-//all copyright is expired (and fictional)
-//so don't worry about it :-)
 
 function hhb_br(/*int*/$multiplier=1,/*string*/$definition="<br/>\n")
 {
