@@ -47,5 +47,5 @@ function to_little_uint64_t($i){
 	return pack('P',$i);
 }
 function to_big_uint64_t($i){
-	return pack('P',$i);
+	return pack('J',$i);
 }
