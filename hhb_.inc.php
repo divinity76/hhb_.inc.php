@@ -383,3 +383,20 @@ function hhb_bin2readable($data,$min_text_len=3,$readable_min=0x40,$readable_max
 	$strbuf="";
 	return $ret;
 }
+function hhb_init(){
+error_reporting(E_ALL);
+set_error_handler("hhb_exception_error_handler");
+//	ini_set("log_errors",true);
+//	ini_set("display_errors",true);
+//	ini_set("log_errors_max_len",0);
+//	ini_set("error_prepend_string",'<error>');
+//	ini_set("error_append_string",'</error>'.PHP_EOL);
+//	ini_set("error_log",__DIR__.'/error_log.php');
+}
+function hhb_exception_error_handler($errno, $errstr, $errfile, $errline ) {
+    if (!(error_reporting() & $errno)) {
+        // This error code is not included in error_reporting
+        return;
+    }
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+}
