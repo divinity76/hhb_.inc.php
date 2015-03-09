@@ -358,7 +358,7 @@ function hhb_return_var_dump() { //works like var_dump, but returns a string ins
     return ob_get_clean();
 };
 
-function bin2readable($data,$min_text_len=3,$readable_min=0x40,$readable_max=0x7E){
+function hhb_bin2readable($data,$min_text_len=3,$readable_min=0x40,$readable_max=0x7E){
 	$ret="";
 	$strbuf="";
 	$i=0;
