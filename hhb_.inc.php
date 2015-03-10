@@ -400,3 +400,29 @@ function hhb_exception_error_handler($errno, $errstr, $errfile, $errline ) {
     }
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
+function hhb_combine_filepaths( /*...*/ ) {
+    $args = func_get_args();
+    if (count($args) == 0) {
+        return "";
+    }
+    $ret = "";
+    $i = 0;
+    foreach($args as $arg) {
+        ++$i;
+        if ($i != 1) {
+            $ret. = '/';
+        }
+        $ret. = str_replace("\\", '/', $arg).
+        '/';
+    }
+    while (false !== stripos($ret, '//')) {
+        $ret = str_replace('//', '/', $ret);
+    }
+    if (0 == strlen($ret)) {
+        return "";
+    }
+    if ($ret[strlen($ret) - 1] == '/') {
+        $ret = substr($ret, 0, -1);
+    }
+    return $ret;
+}
