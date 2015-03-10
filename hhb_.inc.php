@@ -409,14 +409,13 @@ function hhb_combine_filepaths( /*...*/ ) {
     $i = 0;
     foreach($args as $arg) {
         ++$i;
-        if ($i != 1) {
-            $ret. = '/';
+        if ($i!=1){
+            $ret.='/';
         }
-        $ret. = str_replace("\\", '/', $arg).
-        '/';
+        $ret.= str_replace("\\", '/', $arg).'/';
     }
     while (false !== stripos($ret, '//')) {
-        $ret = str_replace('//', '/', $ret);
+        $ret = str_replace('//','/', $ret);
     }
     if (0 == strlen($ret)) {
         return "";
