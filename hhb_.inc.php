@@ -53,8 +53,7 @@ function hhb_curl_init($custom_options_array = array()) {
 
 
 function hhb_curl_exec($ch, $url) {
-    global $hhb_curl_domainCache; //
-static $hhb_curl_domainCache = "";
+        static $hhb_curl_domainCache = "";
     //$hhb_curl_domainCache=&$this->hhb_curl_domainCache;
     //$ch=&$this->curlh;
     	if(!is_resource($ch) || get_resource_type($ch)!=='curl')
