@@ -416,9 +416,8 @@ function hhb_combine_filepaths( /*...*/ ) {
     while (false !== stripos($ret, '//')) {
         $ret = str_replace('//','/', $ret);
     }
-    $len=strlen($ret);
-    if ($len == 0 || $len == 1)) {
-        return $ret;//very edge case scenario, a single / or \ 
+    if (strlen($ret)<2) {
+        return $ret;//very edge case scenario, a single / or \ empty
     }
     if ($ret[strlen($ret) - 1] == '/') {
         $ret = substr($ret, 0, -1);
