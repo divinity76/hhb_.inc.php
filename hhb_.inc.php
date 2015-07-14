@@ -89,9 +89,10 @@ function hhb_curl_exec($ch, $url) {
 }
 
 
-	function hhb_curl_exec2($ch,$url,&$returnHeaders=array(),&$returnCookies=array()){
+	function hhb_curl_exec2($ch,$url,&$returnHeaders=array(),&$returnCookies=array(),&$verboseDebugInfo=""){
 		$returnHeaders=array();
 		$returnCookies=array();
+		$verboseDebugInfo="";
     	if(!is_resource($ch) || get_resource_type($ch)!=='curl')
 		{
 			throw new InvalidArgumentException('$ch must be a curl handle!');
@@ -100,8 +101,17 @@ function hhb_curl_exec($ch, $url) {
 		{
 			throw new InvalidArgumentException('$url must be a string!');
 		}
+		$verbosefileh=tmpfile();
+		$verbosefile=stream_get_meta_data($verbosefileh);
+		$verbosefile=$verbosefile['uri'];
+	    curl_setopt($ch,CURLOPT_VERBOSE,1);
+		curl_setopt($ch,CURLOPT_STDERR,$verbosefileh);
 		curl_setopt($ch, CURLOPT_HEADER, 1);
 		$html=hhb_curl_exec($ch,$url);
+		$verboseDebugInfo=file_get_contents($verbosefile);
+		curl_setopt($ch,CURLOPT_STDERR,NULL);
+		fclose($verbosefileh);
+		unset($verbosefile,$verbosefileh);
 		$headers=array();
 		$crlf="\x0d\x0a";
 		$thepos=strpos($html,$crlf.$crlf,0);
@@ -149,7 +159,6 @@ function hhb_curl_exec($ch, $url) {
 		unset($header,$cookiename,$thepos);
 		return $htmlBody;
 	}
-
 
 function hhb_var_dump() {
   //informative wrapper for var_dump
