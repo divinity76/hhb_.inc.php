@@ -49,3 +49,26 @@ function to_little_uint64_t($i){
 function to_big_uint64_t($i){
 	return pack('J',$i);
 }
+
+/*splits up Nagle Algorithm combined data*/
+function hhb_denagle($nagled_binary){
+    $ret=array();
+    $pos=0;
+    $len=strlen($nagled_binary);
+    while($len>0){
+      if($len<2){
+          throw new Exception('Invalid Nagle algorithm: at byte '.$pos.', length header is <2 bytes long!'); 
+      }
+      $sublen=from_little_uint16_t($nagled_binary[0].$nagled_binary[1]);
+      $nagled_binary=substr($nagled_binary,2);
+      $len-=2;
+      if($len<$sublen){
+          throw new Exception('Invalid Nagle algorithm: length header at byte '.$pos.' specify a length of '.$sublen.' bytes, but only '.$len.' bytes remain!');
+      }
+      $ret[]=substr($nagled_binary,0,$sublen);
+      $nagled_binary=substr($nagled_binary,$sublen);
+      $len-=$sublen;
+      $pos+=$sublen+2;
+    }
+  return $ret;
+}
