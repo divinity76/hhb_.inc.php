@@ -4,7 +4,9 @@ function hhb_br(/*int*/$multiplier=1,/*string*/$definition="<br/>\n")
 {
 echo str_repeat($definition,$multiplier);
 }
-
+function hhb_tohtml($str){
+	return htmlentities($str,ENT_QUOTES|ENT_HTML401|ENT_SUBSTITUTE,'UTF-8',true);
+}
 
 
 
