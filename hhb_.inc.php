@@ -7,7 +7,47 @@
 	function hhb_tohtml($str){
 		return htmlentities($str,ENT_QUOTES|ENT_HTML401|ENT_SUBSTITUTE,'UTF-8',true);
 	}
-	
+
+	function hhb_mustbe(/*string*/$type,/*mixed*/$variable){
+		//should it be UnexpectedValueException or InvalidArgumentException?
+		//going with UnexpectedValueException for now...
+		$actual_type=gettype($variable);
+		if($actual_type==='unknown type'){
+			//i dont know how this can happen, but it is documented as a possible return value of gettype...
+			throw new Exception('could not determine the type of the variable!');
+		}
+		if($actual_type==='object'){
+			if(!is_a($variable,$type)){
+				$dbg=get_class($variable);
+				throw new UnexpectedValueException('variable is an object which does NOT implement class: '.$type.'. it is of class: '.$dbg);
+			}
+			return $variable;
+		}
+		if($actual_type==='resource'){
+			$dbg=get_resource_type($variable);
+			if($dbg!==$type){
+				throw new UnexpectedValueException('variable is a resource, which is NOT of type: '.$type.'. it is of type: '.$dbg);
+			}
+			return $variable;
+		}
+		//now a few special cases
+		if($type==='bool'){
+			$parsed_type='boolean';	
+			} else if($type==='int'){
+			$parsed_type='integer';
+			} else if($type==='float'){
+			$parsed_type='double';
+			} else if($type==='null'){
+			$parsed_type='NULL';
+			} else{
+			$parsed_type=$type;
+		}
+		if($parsed_type!==$actual_type && $type!==$actual_type){
+			throw new UnexpectedValueException('variable is NOT of type: '.$type.'. it is of type: '.$actual_type);
+		}
+		//ok, variable passed all tests.
+		return $variable;
+	}
 	
 	
 	
