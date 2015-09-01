@@ -11,7 +11,13 @@
 	function hhb_mustbe(/*string*/$type,/*mixed*/$variable){
 		//should it be UnexpectedValueException or InvalidArgumentException?
 		//going with UnexpectedValueException for now...
-		if($type==='ipv4'){
+		if($type==='ip'){
+			$dbg=filter_var($variable,FILTER_VALIDATE_IP);
+			if($dbg===false){
+				throw new UnexpectedValueException('variable is NOT a valid ip address!');				
+			}
+			return $variable;
+		}else if($type==='ipv4'){
 			$dbg=filter_var($variable,FILTER_VALIDATE_IP,array('flags'=>FILTER_FLAG_IPV4,'options'=>array('default'=>false)));
 			if($dbg===false){
 				throw new UnexpectedValueException('variable is NOT a valid ipv4 address!');
