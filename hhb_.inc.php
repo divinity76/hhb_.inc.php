@@ -11,6 +11,19 @@
 	function hhb_mustbe(/*string*/$type,/*mixed*/$variable){
 		//should it be UnexpectedValueException or InvalidArgumentException?
 		//going with UnexpectedValueException for now...
+		if($type==='ipv4'){
+			$dbg=filter_var($variable,FILTER_VALIDATE_IP,array('flags'=>FILTER_FLAG_IPV4,'options'=>array('default'=>false)));
+			if($dbg===false){
+				throw new UnexpectedValueException('variable is NOT a valid ipv4 address!');
+			}
+			return $variable;
+		}else if($type==='ipv6'){
+			$dbg=filter_var($variable,FILTER_VALIDATE_IP,array('flags'=>FILTER_FLAG_IPV6,'options'=>array('default'=>false)));
+			if($dbg===false){
+				throw new UnexpectedValueException('variable is NOT a valid ipv6 address!');
+			}
+			return $variable;
+		}
 		$actual_type=gettype($variable);
 		if($actual_type==='unknown type'){
 			//i dont know how this can happen, but it is documented as a possible return value of gettype...
