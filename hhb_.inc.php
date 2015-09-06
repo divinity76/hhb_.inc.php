@@ -197,15 +197,18 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
     unset($html);
     //I REALLY HOPE THERE EXIST A BETTER WAY TO GET COOKIES.. good grief this looks ugly..
     //at least it's tested and seems to work perfectly...
-    $grabCookieName = function($str)
+    $grabCookieName = function($str,&$len)
     {
+        $len=0;
         $ret = "";
         $i   = 0;
         for ($i = 0; $i < strlen($str); ++$i) {
+            ++$len;
             if ($str[$i] === ' ') {
                 continue;
             }
             if ($str[$i] === '=') {
+                --$len;
                 break;
             }
             $ret .= $str[$i];
@@ -224,10 +227,11 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
             /**/
         }
         $header = trim(substr($header, strlen("Set-Cookie:")));
+        $len=0;
         while (strlen($header) > 0) {
-            $cookiename                 = $grabCookieName($header);
+            $cookiename                 = $grabCookieName($header,$len);
             $returnCookies[$cookiename] = '';
-            $header                     = substr($header, strlen($cookiename) + 1); //also remove the = 
+            $header                     = substr($header, $len + 1); //also remove the = 
             if (strlen($header) < 1) {
                 break;
             }
