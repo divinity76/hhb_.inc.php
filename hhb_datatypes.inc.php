@@ -4,7 +4,7 @@ function to_uint8_t($i){
 }
 function from_uint8_t($i){
 	//ord($i) , i know.
-	$arr=unpack("cuint8_t",$i);
+	$arr=unpack("Cuint8_t",$i);
 	return $arr['uint8_t'];
 }
 function from_little_uint16_t($i){
