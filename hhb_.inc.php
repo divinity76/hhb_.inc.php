@@ -6,7 +6,7 @@ function hhb_br( /*int*/ $multiplier = 1, /*string*/ $definition = "<br/>\n")
 }
 function hhb_tohtml($str)
 {
-    return htmlentities($str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE, 'UTF-8', true);
+    return htmlentities($str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true);
 }
 function hhb_mustbe( /*string*/ $type, /*mixed*/ $variable)
 {
