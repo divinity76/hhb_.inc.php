@@ -161,8 +161,6 @@ function hhb_curl_exec($ch, $url)
     	$error=curl_error($curl);
     	throw new RuntimeException('could not set CURLOPT_URL on curl! curl_setopt returned false. curl_errno :'.$curl_errno.'. curl_error: '.$curl_error.'. url: '.var_export($url,true));
     }
-
-    }
     $html = curl_exec($ch);
     if (curl_errno($ch)) {
         throw new Exception('Curl error (curl_errno=' . curl_errno($ch) . ') on url ' . var_export($url, true) . ': ' . curl_error($ch));
