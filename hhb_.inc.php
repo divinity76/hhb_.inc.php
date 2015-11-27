@@ -189,7 +189,7 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
     }
     $verbosefileh = tmpfile();
     if($verbosefileh===false){
-        throw new RuntimeException('can not create a tmpfile for curl's stderr. tmpfile returned false');
+        throw new RuntimeException('can not create a tmpfile for curl\'s stderr. tmpfile returned false');
     }
     $verbosefile  = stream_get_meta_data($verbosefileh);
     $verbosefile  = $verbosefile['uri'];
