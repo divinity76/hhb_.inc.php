@@ -121,6 +121,9 @@ function hhb_curl_init($custom_options_array = array())
     }
     unset($key, $val, $custom_options_array);
     $curl = curl_init();
+    if($curl===false){
+		throw new RuntimeException('could not create a curl handle! curl_init() returned false');
+	}
     curl_setopt_array($curl, $options_array);
     return $curl;
 }
