@@ -131,7 +131,8 @@ function hhb_curl_init($custom_options_array = array())
 
 function hhb_curl_exec($ch, $url)
 {
-    static $hhb_curl_domainCache = "";
+    static $hhb_curl_domainCache = "";//warning, this will not work properly with 2 different curl's visiting 2 different sites. 
+    //should probably use SplObjectStorage here, so each curl can have its own cache..
     //$hhb_curl_domainCache=&$this->hhb_curl_domainCache;
     //$ch=&$this->curlh;
     if (!is_resource($ch) || get_resource_type($ch) !== 'curl') {
