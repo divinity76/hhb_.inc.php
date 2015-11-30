@@ -222,7 +222,7 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
             if ($str[$i] === ' ') {
                 continue;
             }
-            if ($str[$i] === '=') {
+            if ($str[$i] === '=' || $str[$i] === ';') {
                 --$len;
                 break;
             }
@@ -246,11 +246,13 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
         while (strlen($header) > 0) {
             $cookiename                 = $grabCookieName($header,$len);
             $returnCookies[$cookiename] = '';
-            $header                     = substr($header, $len + 1); //also remove the = 
+            $header                     = substr($header, $len); 
             if (strlen($header) < 1) {
                 break;
             }
-            ;
+            if($header[0]==='='){
+				$header=substr($header,1);
+			}
             $thepos = strpos($header, ';');
             if ($thepos === false) { //last cookie in this Set-Cookie.
                 $returnCookies[$cookiename] = urldecode($header);
