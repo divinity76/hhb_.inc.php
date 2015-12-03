@@ -187,6 +187,13 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
     if (!is_string($url)) {
         throw new InvalidArgumentException('$url must be a string!');
     }
+    static $stderrhandle=false;
+    if($stderrhandle===false){
+    	$stderrhandle=fopen('php://stderr', 'wb');
+    	if($stderrhandle===false){
+    		throw new RuntimeException('unable to get a handle to php://stderr !');
+    	}
+    }
     $verbosefileh = tmpfile();
     if($verbosefileh===false){
         throw new RuntimeException('can not create a tmpfile for curl\'s stderr. tmpfile returned false');
@@ -198,7 +205,7 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
     curl_setopt($ch, CURLOPT_HEADER, 1);
     $html             = hhb_curl_exec($ch, $url);
     $verboseDebugInfo = file_get_contents($verbosefile);
-    curl_setopt($ch, CURLOPT_STDERR, NULL);
+    curl_setopt($ch, CURLOPT_STDERR, $stderrhandle);
     fclose($verbosefileh);
     unset($verbosefile, $verbosefileh);
     $headers       = array();
