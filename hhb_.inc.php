@@ -221,11 +221,9 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
     //at least it's tested and seems to work perfectly...
     $grabCookieName = function($str,&$len)
     {
-        $len=0;
+        $slen=strlen($str);
         $ret = "";
-        $i   = 0;
-        for ($i = 0; $i < strlen($str); ++$i) {
-            ++$len;
+        for ($len = 0; $len < $slen; ++$len) {
             if ($str[$i] === ' ') {
                 continue;
             }
