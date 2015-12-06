@@ -224,14 +224,14 @@ function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = 
         $slen=strlen($str);
         $ret = "";
         for ($len = 0; $len < $slen; ++$len) {
-            if ($str[$i] === ' ') {
+            if ($str[$len] === ' ') {
                 continue;
             }
-            if ($str[$i] === '=' || $str[$i] === ';') {
+            if ($str[$len] === '=' || $str[$len] === ';') {
                 --$len;
                 break;
             }
-            $ret .= $str[$i];
+            $ret .= $str[$len];
         }
         return urldecode($ret);
     };
