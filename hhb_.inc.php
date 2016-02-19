@@ -595,6 +595,11 @@ function hhb_bin2readable($data, $min_text_len = 3, $readable_min = 0x40, $reada
 }
 function hhb_init()
 {
+    static $firstrun=true;
+    if($firstrun!==true){
+    	return;
+    }
+    $firstrun=false;
     error_reporting(E_ALL);
     set_error_handler("hhb_exception_error_handler");
     //	ini_set("log_errors",true);
@@ -603,6 +608,10 @@ function hhb_init()
     //	ini_set("error_prepend_string",'<error>');
     //	ini_set("error_append_string",'</error>'.PHP_EOL);
     //	ini_set("error_log",__DIR__.'/error_log.php');
+    assert_options(ASSERT_ACTIVE, 1);
+    assert_options(ASSERT_WARNING, 0);
+    assert_options(ASSERT_QUIET_EVAL, 1);
+    assert_options(ASSERT_CALLBACK, 'hhb_assert_handler');
 }
 function hhb_exception_error_handler($errno, $errstr, $errfile, $errline)
 {
@@ -611,6 +620,11 @@ function hhb_exception_error_handler($errno, $errstr, $errfile, $errline)
         return;
     }
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+}
+function hhb_assert_handler($file, $line, $code, $desc = null)
+{
+    $errstr='Assertion failed at '.$file.':'.$line.' '.$desc.' code: '.$code;
+    throw new ErrorException($errstr,0,1,$file,$line);
 }
 function hhb_combine_filepaths( /*...*/ )
 {
