@@ -649,3 +649,411 @@ function hhb_combine_filepaths( /*...*/ ):string
     }
     return $ret;
 }
+
+
+
+
+
+class hhb_curl {
+	protected $curlh;
+	protected $curloptions = [ ];
+	protected $response_body_file_handle; // CURLOPT_FILE
+	protected $response_headers_file_handle; // CURLOPT_WRITEHEADER
+	protected $request_body_file_handle; // CURLOPT_INFILE
+	protected $stderr_file_handle; // CURLOPT_STDERR
+	protected function truncateFileHandles() {
+		$trun = ftruncate ( $this->response_body_file_handle, 0 );
+		assert ( true === $trun );
+		$trun = ftruncate ( $this->response_headers_file_handle, 0 );
+		assert ( true === $trun );
+		// $trun = ftruncate ( $this->request_body_file_handle, 0 );
+		// assert ( true === $trun );
+		$trun = ftruncate ( $this->stderr_file_handle, 0 );
+		assert ( true === $trun );
+		return /*true*/;
+	}
+	function _getCurlHandle()/*: curlresource*/ {
+		return $this->curlh;
+	}
+	function _replaceCurl($newcurl, bool $closeold = true) {
+		if (! is_resource ( $newcurl )) {
+			throw new InvalidArgumentsException ( 'parameter 1 must be a curl resource!' );
+		}
+		if (get_resource_type ( $newcurl ) !== 'curl') {
+			throw new InvalidArgumentsException ( 'parameter 1 must be a curl resource!' );
+		}
+		if ($closeold) {
+			curl_close ( $this->curlh );
+		}
+		$this->curlh = $newcurl;
+		$this->_prepare_curl ();
+	}
+	static function init(string $url = null): hhb_curl {
+		return new hhb_curl ( $url );
+	}
+	function __construct(string $url = null) {
+		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given
+		if (! $this->curlh) {
+			throw new RuntimeException ( 'curl_init failed!' );
+		}
+		if ($url !== null) {
+			$this->_setopt ( CURLOPT_URL, $url );
+		}
+		$fhandles = [ ];
+		$tmph = NULL;
+		for($i = 0; $i < 4; ++ $i) {
+			$tmph = tmpfile ();
+			if ($tmph === false) {
+				// for($ii = 0; $ii < $i; ++ $ii) {
+				// // @fclose($fhandles[$ii]);//yay, potentially overwriting last error to fuck your debugging efforts!
+				// }
+				throw new RuntimeException ( 'tmpfile() failed to create 4 file handles!' );
+			}
+			$fhandles [] = $tmph;
+		}
+		unset ( $tmph );
+		$this->response_body_file_handle = $fhandles [0]; // CURLOPT_FILE
+		$this->response_headers_file_handle = $fhandles [1]; // CURLOPT_WRITEHEADER
+		$this->request_body_file_handle = $fhandles [2]; // CURLOPT_INFILE
+		$this->stderr_file_handle = $fhandles [3]; // CURLOPT_STDERR
+		unset ( $fhandles );
+		$this->_prepare_curl ();
+	}
+	function __destruct() {
+		curl_close ( $this->curlh );
+		fclose ( $this->response_body_file_handle ); // CURLOPT_FILE
+		fclose ( $this->response_headers_file_handle ); // CURLOPT_WRITEHEADER
+		fclose ( $this->request_body_file_handle ); // CURLOPT_INFILE
+		fclose ( $this->stderr_file_handle ); // CURLOPT_STDERR
+	}
+	function _setComfortableSettings() {
+		$this->setopt_array ( array (
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_BINARYTRANSFER => true,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTPGET => true,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_CONNECTTIMEOUT => 4,
+				CURLOPT_TIMEOUT => 8,
+				CURLOPT_COOKIEFILE => "", // <<makes curl save/load cookies across requests..
+				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
+				CURLOPT_USERAGENT => 'hhb_curl; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
+		) ) //
+;
+	}
+	function errno(): int {
+		return curl_errno ( $this->curlh );
+	}
+	function error(): string {
+		return curl_error ( $this->curlh );
+	}
+	function escape(string $str): string {
+		return curl_escape ( $this->curlh, $str );
+	}
+	function unescape(string $str): string {
+		return curl_unescape ( $this->curlh, $str );
+	}
+	function exec(string $url = null): bool {
+		$this->truncateFileHandles ();
+		if (is_string ( $url ) && strlen ( $url ) > 0) {
+			$this->setopt ( CURLOPT_URL, $url );
+		}
+		$ret = curl_exec ( $this->curlh );
+		if ($this->errno ()) {
+			throw new RuntimeException ( 'curl_exec failed. errno: ' . var_export ( $this->errno (), true ) . ' error: ' . var_export ( $this->error (), true ) );
+		}
+		return $ret;
+	}
+	function file_create(string $filename, string $mimetype = null, string $postname = null): CURLFile {
+		return curl_file_create ( $filename, $mimetype, $postname );
+	}
+	function getinfo(int $opt) {
+		return curl_getinfo ( $this->curlh, $opt );
+	}
+	function pause(int $bitmask): int {
+		return curl_pause ( $this->curlh, $bitmask );
+	}
+	function reset() {
+		curl_reset ( $this->curlh );
+		$this->curloptions = [ ];
+		$this->_prepare_curl ();
+	}
+	function setopt_array(array $options): bool {
+		foreach ( $options as $option => $value ) {
+			$this->setopt ( $option, $value );
+		}
+		return true;
+	}
+	function getResponseBody(): string {
+		return file_get_contents ( stream_get_meta_data ( $this->response_body_file_handle ) ['uri'] );
+	}
+	//
+	function getResponseHeaders(): array {
+		$text = file_get_contents ( stream_get_meta_data ( $this->response_headers_file_handle ) ['uri'] );
+		// ...
+		return $this->splitHeaders ( $text );
+	}
+	function getResponsesHeaders(): array {
+		// var_dump($this->getStdErr());die();
+		// CONSIDER https://bugs.php.net/bug.php?id=65348
+		$Cr = "\x0d";
+		$Lf = "\x0a";
+		$CrLf = "\x0d\x0a";
+		$stderr = $this->getStdErr ();
+		$responses = [ ];
+		while ( FALSE !== ($startPos = strpos ( $stderr, $Lf . '<' )) ) {
+			$stderr = substr ( $stderr, $startPos + strlen ( $Lf ) );
+			$endPos = strpos ( $stderr, $CrLf . "<\x20" . $CrLf );
+			// var_dump(bin2hex(substr($stderr,279,30)),$endPos);die("HEX");
+			// var_dump($stderr,$endPos);die("PAIN");
+			assert ( $endPos !== FALSE ); // should always be more after this with CURLOPT_VERBOSE.. (connection left intact / connecton dropped /whatever)
+			$headers = substr ( $stderr, 0, $endPos );
+			// $headerscpy=$headers;
+			$stderr = substr ( $stderr, $endPos + strlen ( $CrLf . $CrLf ) );
+			$headers = preg_split ( "/((\r?\n)|(\r\n?))/", $headers ); // i can NOT explode($CrLf,$headers); because sometimes, in the middle of recieving headers, it will spout stuff like "\n* Added cookie reg_ext_ref="deleted" for domain facebook.com, path /, expire 1457503459"
+			                                                           // if(strpos($headerscpy,"report-uri=")!==false){
+			                                                           // //var_dump($headerscpy);die("DIEDS");
+			                                                           // var_dump($headers);
+			                                                           // //var_dump($this->getStdErr());die("DIEDS");
+			                                                           // }
+			foreach ( $headers as $key => &$val ) {
+				$val = trim ( $val );
+				if (! strlen ( $val )) {
+					unset ( $headers [$key] );
+					continue;
+				}
+				if ($val [0] !== '<') {
+					// static $r=0;++$r;var_dump('removing',$val);if($r>1)die();
+					unset ( $headers [$key] ); // sometimes, in the middle of recieving headers, it will spout stuff like "\n* Added cookie reg_ext_ref="deleted" for domain facebook.com, path /, expire 1457503459"
+					continue;
+				}
+				$val = trim ( substr ( $val, 1 ) );
+			}
+			unset ( $val ); // references can be scary..
+			$responses [] = $headers;
+		}
+		unset ( $headers, $key, $val, $endPos, $startPos );
+		return $responses;
+	}
+	// we COULD have a getResponsesCookies too...
+	function getResponseCookies(): array {
+		$headers = $this->getResponsesHeaders ();
+		$headers_merged = array ();
+		foreach ( $headers as $headers2 ) {
+			foreach ( $headers2 as $header ) {
+				$headers_merged [] = $header;
+			}
+		}
+		return $this->parseCookies ( $headers_merged );
+	}
+	function getRequestBody(): string {
+		return file_get_contents ( stream_get_meta_data ( $this->request_body_file_handle ) ['uri'] );
+	}
+	// gets the headers of the LAST request..
+	function getRequestHeaders(): array {
+		$requestsHeaders = $this->getRequestsHeaders ();
+		$requestCount = count ( $requestsHeaders );
+		if ($requestCount === 0) {
+			return array ();
+		}
+		return $requestsHeaders [$requestCount - 1];
+	}
+	// array(0=>array(request1_headers),1=>array(requst2_headers),2=>array(request3_headers))~
+	function getRequestsHeaders(): array {
+		// CONSIDER https://bugs.php.net/bug.php?id=65348
+		$Cr = "\x0d";
+		$Lf = "\x0a";
+		$CrLf = "\x0d\x0a";
+		$stderr = $this->getStdErr ();
+		$requests = [ ];
+		while ( FALSE !== ($startPos = strpos ( $stderr, $Lf . '>' )) ) {
+			$stderr = substr ( $stderr, $startPos + strlen ( $Lf . '>' ) );
+			$endPos = strpos ( $stderr, $CrLf . $CrLf );
+			assert ( $endPos !== FALSE ); // should always be more after this with CURLOPT_VERBOSE.. (connection left intact / connecton dropped /whatever)
+			$headers = substr ( $stderr, 0, $endPos );
+			$stderr = substr ( $stderr, $endPos + strlen ( $CrLf . $CrLf ) );
+			$headers = explode ( $CrLf, $headers );
+			foreach ( $headers as $key => &$val ) {
+				$val = trim ( $val );
+				if (! strlen ( $val )) {
+					unset ( $headers [$key] );
+				}
+			}
+			unset ( $val ); // references can be scary..
+			$requests [] = $headers;
+		}
+		unset ( $headers, $key, $val, $endPos, $startPos );
+		return $requests;
+	}
+	function getRequestCookies(): array {
+		return $this->parseCookies ( $this->getRequestHeaders () );
+	}
+	function getStdErr(): string {
+		return file_get_contents ( stream_get_meta_data ( $this->stderr_file_handle ) ['uri'] );
+	}
+	function getStdOut(): string {
+		// alias..
+		return $this->getResponseBody ();
+	}
+	protected function splitHeaders(string $headerstring): array {
+		$headers = preg_split ( "/((\r?\n)|(\r\n?))/", $headerstring );
+		foreach ( $headers as $key => $val ) {
+			if (! strlen ( trim ( $val ) )) {
+				unset ( $headers [$key] );
+			}
+		}
+		return $headers;
+	}
+	protected function parseCookies(array $headers): array {
+		$returnCookies = [ ];
+		$grabCookieName = function ($str, &$len) {
+			$len = 0;
+			$ret = "";
+			$i = 0;
+			for($i = 0; $i < strlen ( $str ); ++ $i) {
+				++ $len;
+				if ($str [$i] === ' ') {
+					continue;
+				}
+				if ($str [$i] === '=' || $str [$i] === ';') {
+					-- $len;
+					break;
+				}
+				$ret .= $str [$i];
+			}
+			return urldecode ( $ret );
+		};
+		foreach ( $headers as $header ) {
+			// Set-Cookie: crlfcoookielol=crlf+is%0D%0A+and+newline+is+%0D%0A+and+semicolon+is%3B+and+not+sure+what+else
+			/*
+			 * Set-Cookie:ci_spill=a%3A4%3A%7Bs%3A10%3A%22session_id%22%3Bs%3A32%3A%22305d3d67b8016ca9661c3b032d4319df%22%3Bs%3A10%3A%22ip_address%22%3Bs%3A14%3A%2285.164.158.128%22%3Bs%3A10%3A%22user_agent%22%3Bs%3A109%3A%22Mozilla%2F5.0+%28Windows+NT+6.1%3B+WOW64%29+AppleWebKit%2F537.36+%28KHTML%2C+like+Gecko%29+Chrome%2F43.0.2357.132+Safari%2F537.36%22%3Bs%3A13%3A%22last_activity%22%3Bi%3A1436874639%3B%7Dcab1dd09f4eca466660e8a767856d013; expires=Tue, 14-Jul-2015 13:50:39 GMT; path=/
+			 * Set-Cookie: sessionToken=abc123; Expires=Wed, 09 Jun 2021 10:18:14 GMT;
+			 * //Cookie names cannot contain any of the following '=,; \t\r\n\013\014'
+			 * //
+			 */
+			if (stripos ( $header, "Set-Cookie:" ) !== 0) {
+				continue;
+				/* */
+			}
+			$header = trim ( substr ( $header, strlen ( "Set-Cookie:" ) ) );
+			$len = 0;
+			while ( strlen ( $header ) > 0 ) {
+				$cookiename = $grabCookieName ( $header, $len );
+				$returnCookies [$cookiename] = '';
+				$header = substr ( $header, $len );
+				if (strlen ( $header ) < 1) {
+					break;
+				}
+				if ($header [0] === '=') {
+					$header = substr ( $header, 1 );
+				}
+				$thepos = strpos ( $header, ';' );
+				if ($thepos === false) { // last cookie in this Set-Cookie.
+					$returnCookies [$cookiename] = urldecode ( $header );
+					break;
+				}
+				$returnCookies [$cookiename] = urldecode ( substr ( $header, 0, $thepos ) );
+				$header = trim ( substr ( $header, $thepos + 1 ) ); // also remove the ;
+			}
+		}
+		unset ( $header, $cookiename, $thepos );
+		return $returnCookies;
+	}
+	function setopt(int $option, $value): bool {
+		switch ($option) {
+			case CURLOPT_VERBOSE :
+				{
+					trigger_error ( 'you should NOT change CURLOPT_VERBOSE. use getStdErr() instead. we are working around https://bugs.php.net/bug.php?id=65348 using CURLOPT_VERBOSE.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_RETURNTRANSFER :
+				{
+					trigger_error ( 'you should NOT use CURLOPT_RETURNTRANSFER. use getResponseBody() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_FILE :
+				{
+					trigger_error ( 'you should NOT use CURLOPT_FILE. use getResponseBody() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_WRITEHEADER :
+				{
+					trigger_error ( 'you should NOT use CURLOPT_WRITEHEADER. use getResponseHeaders() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_INFILE :
+				{
+					trigger_error ( 'you should NOT use CURLOPT_INFILE. use setRequestBody() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_STDERR :
+				{
+					trigger_error ( 'you should NOT use CURLOPT_STDERR. use getStdErr() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			case CURLOPT_HEADER :
+				{
+					trigger_error ( 'you NOT use CURLOPT_HEADER. use  getResponsesHeaders() instead. expect problems now. we are working around https://bugs.php.net/bug.php?id=65348 using CURLOPT_VERBOSE, which is, until the bug is fixed, is incompatible with CURLOPT_HEADER.', E_USER_WARNING );
+					break;
+				}
+			case CURLINFO_HEADER_OUT :
+				{
+					trigger_error ( 'you should NOT use CURLINFO_HEADER_OUT. use  getRequestHeaders() instead. expect problems now.', E_USER_WARNING );
+					break;
+				}
+			
+			default :
+				{
+				}
+		}
+		return $this->_setopt ( $option, $value );
+	}
+	private function _setopt($option, $value): bool {
+		$ret = curl_setopt ( $this->curlh, $option, $value );
+		if (! $ret) {
+			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
+		}
+		$curloptions [$option] = $value;
+		return $ret; // true...
+	}
+	function getopt(int $option) {
+		if (array_key_exists ( $option, $this->curloptions )) {
+			return $this->curloptions [$option];
+		} else {
+			return NULL; // is this indistinguishable from an option actually containing NULL? yes, yes it is.
+		}
+	}
+	function strerror(int $errornum): string {
+		return curl_strerror ( $errornum );
+	}
+	function version(int $age = CURLVERSION_NOW): array {
+		return curl_version ( $age );
+	}
+	private function _prepare_curl() {
+		$this->truncateFileHandles ();
+		$this->_setopt ( CURLOPT_FILE, $this->response_body_file_handle ); // CURLOPT_FILE
+		$this->_setopt ( CURLOPT_WRITEHEADER, $this->response_headers_file_handle ); // CURLOPT_WRITEHEADER
+		$this->_setopt ( CURLOPT_INFILE, $this->request_body_file_handle ); // CURLOPT_INFILE
+		$this->_setopt ( CURLOPT_STDERR, $this->stderr_file_handle ); // CURLOPT_STDERR
+		$this->_setopt ( CURLOPT_VERBOSE, true );
+	}
+	function _curlopt_name(int $option)/*:mixed(string|false)*/{
+		// thanks to TML for the get_defined_constants trick..
+		// <TML> If you had some specific reason for doing it with your current approach (which is, to me, approaching the problem completely backwards - "I dug a hole! How do I get out!"), it seems that your entire function there could be replaced with: return array_flip(get_defined_constants(true)['curl']);
+		$curldefs = array_flip ( get_defined_constants ( true ) ['curl'] );
+		if (isset ( $curldefs [$option] )) {
+			return $curldefs [$option];
+		} else {
+			return false;
+		}
+	}
+	function _curlopt_number(string $option)/*:mixed(int|false)*/{
+		// thanks to TML for the get_defined_constants trick..
+		$curldefs = get_defined_constants ( true ) ['curl'];
+		if (isset ( $curldefs [$option] )) {
+			return $curldefs [$option];
+		} else {
+			return false;
+		}
+	}
+}
