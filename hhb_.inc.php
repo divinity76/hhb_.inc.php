@@ -1,14 +1,14 @@
 <?php
-
-function hhb_br( /*int*/ $multiplier = 1, /*string*/ $definition = "<br/>\n")
+declare(strict_types=1);
+function hhb_br( int $multiplier = 1, string $definition = "<br/>\n")
 {
     echo str_repeat($definition, $multiplier);
 }
-function hhb_tohtml($str)
+function hhb_tohtml(string $str):string
 {
     return htmlentities($str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true);
 }
-function hhb_mustbe( /*string*/ $type, /*mixed*/ $variable)
+function hhb_mustbe(string $type, $variable)/*:decltype($variable)*/
 {
     //should it be UnexpectedValueException or InvalidArgumentException?
     //going with UnexpectedValueException for now...
@@ -81,7 +81,7 @@ function hhb_mustbe( /*string*/ $type, /*mixed*/ $variable)
 
 
 
-function hhb_curl_init($custom_options_array = array())
+function hhb_curl_init(array $custom_options_array = array())
 {
     if (empty($custom_options_array)) {
         $custom_options_array = array();
@@ -133,7 +133,7 @@ function hhb_curl_init($custom_options_array = array())
 }
 
 
-function hhb_curl_exec($ch, $url)
+function hhb_curl_exec($ch, string $url):string
 {
     static $hhb_curl_domainCache = "";//warning, this will not work properly with 2 different curl's visiting 2 different sites. 
     //should probably use SplObjectStorage here, so each curl can have its own cache..
@@ -176,7 +176,7 @@ function hhb_curl_exec($ch, $url)
 }
 
 
-function hhb_curl_exec2($ch, $url, &$returnHeaders = array(), &$returnCookies = array(), &$verboseDebugInfo = "")
+function hhb_curl_exec2($ch,string $url,array &$returnHeaders = array(),array &$returnCookies = array(),string &$verboseDebugInfo = "")
 {
     $returnHeaders    = array();
     $returnCookies    = array();
@@ -558,7 +558,7 @@ function hhb_var_dump()
     //call_user_func_array("var_dump",$args);
 }
 
-function hhb_return_var_dump() //works like var_dump, but returns a string instead of printing it.
+function hhb_return_var_dump():string //works like var_dump, but returns a string instead of printing it.
 {
     $args = func_get_args(); //for <5.3.0 support ...
     ob_start();
@@ -567,7 +567,7 @@ function hhb_return_var_dump() //works like var_dump, but returns a string inste
 }
 ;
 
-function hhb_bin2readable($data, $min_text_len = 3, $readable_min = 0x40, $readable_max = 0x7E)
+function hhb_bin2readable(string $data,int $min_text_len = 3,int $readable_min = 0x40,int $readable_max = 0x7E):string
 {
     $ret    = "";
     $strbuf = "";
@@ -626,7 +626,7 @@ function hhb_assert_handler($file, $line, $code, $desc = null)
     $errstr='Assertion failed at '.$file.':'.$line.' '.$desc.' code: '.$code;
     throw new ErrorException($errstr,0,1,$file,$line);
 }
-function hhb_combine_filepaths( /*...*/ )
+function hhb_combine_filepaths( /*...*/ ):string
 {
     $args = func_get_args();
     if (count($args) == 0) {
