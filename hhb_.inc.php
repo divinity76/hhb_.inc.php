@@ -755,6 +755,10 @@ class hhb_curl {
 	}
 	function exec(string $url = null): bool {
 		$this->truncateFileHandles ();
+		//WARNING: some weird error where curl will fill up the file again with 00's when the file has been truncated
+		//until it is the same size as it was before truncating, then keep appending...
+		//hopefully this _prepare_curl() call will fix that.. (seen on debian 8 on btrfs with curl/7.38.0)
+		$this->_prepare_curl();
 		if (is_string ( $url ) && strlen ( $url ) > 0) {
 			$this->setopt ( CURLOPT_URL, $url );
 		}
