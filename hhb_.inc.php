@@ -737,7 +737,7 @@ class hhb_curl {
 				CURLOPT_TIMEOUT => 8,
 				CURLOPT_COOKIEFILE => "", // <<makes curl save/load cookies across requests..
 				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
-				CURLOPT_USERAGENT => 'hhb_curl; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
+				CURLOPT_USERAGENT => 'hhb_curl_php; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
 		) ) //
 ;
 	}
