@@ -532,7 +532,7 @@ class hhb_curl {
 		fclose ( $this->request_body_file_handle ); // CURLOPT_INFILE
 		fclose ( $this->stderr_file_handle ); // CURLOPT_STDERR
 	}
-	function _setComfortableSettings() {
+	function _setComfortableOptions() {
 		$this->setopt_array ( array (
 				CURLOPT_AUTOREFERER => true,
 				CURLOPT_BINARYTRANSFER => true,
