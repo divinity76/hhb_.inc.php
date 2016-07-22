@@ -818,7 +818,7 @@ class hhb_curl {
 		}
 		return $this->_setopt ( $option, $value );
 	}
-	private function _setopt($option, $value): bool {
+	private function _setopt(int $option, $value): bool {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
