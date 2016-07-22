@@ -371,7 +371,7 @@ function hhb_return_var_dump():string //works like var_dump, but returns a strin
 ;
 
 function hhb_bin2readable(string $data,int $min_text_len = 3,int $readable_min = 0x40,int $readable_max = 0x7E):string
-{
+{//TODO: better output..
     $ret    = "";
     $strbuf = "";
     $i      = 0;
