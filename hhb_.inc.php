@@ -826,11 +826,13 @@ class hhb_curl {
 		$curloptions [$option] = $value;
 		return $ret; // true...
 	}
-	function getopt(int $option) {
+	function getopt(int $option, bool &$isset=NULL) {
 		if (array_key_exists ( $option, $this->curloptions )) {
+			$isset=true;
 			return $this->curloptions [$option];
 		} else {
-			return NULL; // is this indistinguishable from an option actually containing NULL? yes, yes it is.
+			$isset=false;
+			return NULL;
 		}
 	}
 	function strerror(int $errornum): string {
