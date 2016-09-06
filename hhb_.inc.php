@@ -823,7 +823,7 @@ class hhb_curl {
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
 		}
-		$curloptions [$option] = $value;
+		$this->curloptions [$option] = $value;
 		return $ret; // true...
 	}
 	function getopt(int $option, bool &$isset=NULL) {
