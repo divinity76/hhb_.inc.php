@@ -13,7 +13,7 @@
     </blacklist>
     <whitelist>
       <!-- lib subfolders to include -->
-      <!-- <directory>lib/exceptions</directory>
+      <!-- <directory>lib/exceptions</directory -->
       <directory>lib/filter</directory>
       <directory>lib/form</directory>
       <directory>lib/model</directory>
