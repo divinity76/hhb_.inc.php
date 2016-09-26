@@ -1,4 +1,4 @@
-<?php travis fail test
+<?php //now travis shouldn't fail i guess..
 function hhb_tohtml(string $str):string
 {
     return htmlentities($str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true);
