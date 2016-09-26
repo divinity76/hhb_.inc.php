@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  colors="true"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  stopOnFailure="true">
+
+  <filter>
+    <blacklist>
+      <!-- <directory>cache</directory> -->
+      <!-- <directory>lib/vendor</directory> -->
+    </blacklist>
+    <whitelist>
+      <!-- lib subfolders to include -->
+      <!-- <directory>lib/exceptions</directory>
+      <directory>lib/filter</directory>
+      <directory>lib/form</directory>
+      <directory>lib/model</directory>
+      <directory>lib/task</directory>
+      <directory>lib/validator</directory>
+
+      <exclude>
+        <!-- <directory>lib/filter/*/base</directory> -->
+        <!-- interfaces are not covered -->
+        <!-- <directory suffix=".interface.php">.</directory> -->
+      </exclude>
+    </whitelist>
+  </filter>
+
+  <testsuites>
+    <testsuite name="Functional Tests">
+      <directory>.</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>
