@@ -410,7 +410,7 @@ function hhb_init()
     //	ini_set("log_errors_max_len",0);
     //	ini_set("error_prepend_string",'<error>');
     //	ini_set("error_append_string",'</error>'.PHP_EOL);
-    //	ini_set("error_log",__DIR__.'/error_log.php');
+    //	ini_set("error_log",__DIR__.DIRECTORY_SEPARATOR.'error_log.php');
     assert_options(ASSERT_ACTIVE, 1);
     assert_options(ASSERT_WARNING, 0);
     assert_options(ASSERT_QUIET_EVAL, 1);
@@ -440,17 +440,17 @@ function hhb_combine_filepaths( /*...*/ ):string
     foreach ($args as $arg) {
         ++$i;
         if ($i != 1) {
-            $ret .= '/';
+            $ret .= DIRECTORY_SEPARATOR;
         }
-        $ret .= str_replace("\\", '/', $arg) . '/';
+        $ret .= str_replace((DIRECTORY_SEPARATOR==='/'?'\\':'/'), DIRECTORY_SEPARATOR, $arg) . DIRECTORY_SEPARATOR;
     }
-    while (false !== stripos($ret, '//')) {
-        $ret = str_replace('//', '/', $ret);
+    while (false !== stripos($ret, DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR)) {
+        $ret = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $ret);
     }
     if (strlen($ret) < 2) {
-        return $ret; //very edge case scenario, a single / or \ empty
+        return $ret; //edge case: a single DIRECTORY_SEPARATOR empty
     }
-    if ($ret[strlen($ret) - 1] == '/') {
+    if ($ret[strlen($ret) - 1] === DIRECTORY_SEPARATOR) {
         $ret = substr($ret, 0, -1);
     }
     return $ret;
