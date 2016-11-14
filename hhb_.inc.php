@@ -405,12 +405,12 @@ function hhb_init()
     $firstrun=false;
     error_reporting(E_ALL);
     set_error_handler("hhb_exception_error_handler");
-    //	ini_set("log_errors",true);
-    //	ini_set("display_errors",true);
-    //	ini_set("log_errors_max_len",0);
+    //	ini_set("log_errors",'On');
+    //	ini_set("display_errors",'On');
+    //	ini_set("log_errors_max_len",'0');
     //	ini_set("error_prepend_string",'<error>');
     //	ini_set("error_append_string",'</error>'.PHP_EOL);
-    //	ini_set("error_log",__DIR__.DIRECTORY_SEPARATOR.'error_log.php');
+    //	ini_set("error_log",__DIR__.DIRECTORY_SEPARATOR.'error_log.php.txt');
     assert_options(ASSERT_ACTIVE, 1);
     assert_options(ASSERT_WARNING, 0);
     assert_options(ASSERT_QUIET_EVAL, 1);
