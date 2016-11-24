@@ -869,3 +869,86 @@ class hhb_curl {
 		}
 	}
 }
+class hhb_bcmath {
+	public $scale = 200;
+	public function __construct(int $scale=200){
+		$this->scale=$scale;
+	}
+	public function add(string $left_operand, string $right_operand, int $scale = NULL): string {
+		$scale = $scale ?? $this->scale;
+		$ret = bcadd ( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	public function comp ( string $left_operand , string $right_operand, int $scale = NULL):int
+	{
+		$scale = $scale ?? $this->scale;
+		$ret = bccomp( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	public function div(string $left_operand, string $right_operand, int $scale = NULL): string {
+		$scale = $scale ?? $this->scale;
+		$right_operand=$this->bctrim(trim($right_operand));
+		if($right_operand==='0'){
+			throw new DivisionByZeroError();
+		}
+		$ret = bcdiv( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	public function mod(string $left_operand, string $modulus): string {
+		$scale = $scale ?? $this->scale;
+		$modulus=$this->bctrim(trim($modulus));
+		if($modulus==='0'){
+			//if there was a ModulusByZero error, i would use it
+			throw new DivisionByZeroError();
+		}
+		$ret = bcmod( $left_operand, $modulus);
+		return $this->bctrim ( $ret );
+	}
+	public function mul(string $left_operand, string $right_operand, int $scale = NULL): string {
+		$scale = $scale ?? $this->scale;
+		$ret = bcmul ( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	public function pow(string $left_operand, string $right_operand, int $scale = NULL): string {
+		$scale = $scale ?? $this->scale;
+		$ret = bcpow ( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	public function powmod(string $left_operand, string $right_operand, string $modulus,int $scale=NULL): string {
+		$scale = $scale ?? $this->scale;
+		$modulus=$this->bctrim(trim($modulus));
+		if($modulus==='0'){
+			//if there was a ModulusByZero error, i would use it
+			throw new DivisionByZeroError();
+		}
+		$ret = bcpowmod( $left_operand, $modulus,$modulus,$scale);
+		return $this->bctrim ( $ret );
+	}
+	public function scale(int $scale):bool{
+		$this->scale=$scale;
+		return true;
+	}
+	public function sqrt ( string $operand, int $scale = NULL ){
+		$scale = $scale ?? $this->scale;
+		if(bccomp($operand, '-1')!==-1){
+			throw new RangeException('tried to get the square root of number below zero!');
+		}
+		$ret = bcsqrt( $left_operand,$scale);
+		return $this->bctrim ( $ret );
+	}
+	public function sub(string $left_operand, string $right_operand, int $scale = NULL): string {
+		$scale = $scale ?? $this->scale;
+		$ret = bcsub ( $left_operand, $right_operand, $scale );
+		return $this->bctrim ( $ret );
+	}
+	protected function bctrim(string $str): string {
+		if (false === strpos ( $str, '.' )) {
+			return $str;
+		}
+		$str = rtrim ( $str, '0' );
+		if ($str [strlen ( $str ) - 1] === '.') {
+			$str = substr ( $str, 0, - 1 );
+		}
+		return $str;
+	}
+}
