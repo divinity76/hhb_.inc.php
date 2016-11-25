@@ -942,6 +942,7 @@ class hhb_bcmath {
 		return $this->bctrim ( $ret );
 	}
 	public static function bctrim(string $str): string {
+		$str=trim($str);
 		if (false === strpos ( $str, '.' )) {
 			return $str;
 		}
