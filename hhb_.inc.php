@@ -883,7 +883,7 @@ class hhb_bcmath {
 	{
 		$scale = $scale ?? $this->scale;
 		$ret = bccomp( $left_operand, $right_operand, $scale );
-		return $this->bctrim ( $ret );
+		return $ret;
 	}
 	public function div(string $left_operand, string $right_operand, int $scale = NULL): string {
 		$scale = $scale ?? $this->scale;
