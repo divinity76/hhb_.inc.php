@@ -941,7 +941,7 @@ class hhb_bcmath {
 		$ret = bcsub ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	protected function bctrim(string $str): string {
+	public static function bctrim(string $str): string {
 		if (false === strpos ( $str, '.' )) {
 			return $str;
 		}
