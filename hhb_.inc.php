@@ -614,6 +614,10 @@ class hhb_curl {
 		while ( FALSE !== ($startPos = strpos ( $stderr, $Lf . '<' )) ) {
 			$stderr = substr ( $stderr, $startPos + strlen ( $Lf ) );
 			$endPos = strpos ( $stderr, $CrLf . "<\x20" . $CrLf );
+			if($endPos===false){
+				//ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
+				$endPos=strpos($stderr,$Lf."<\x20".$CrLf);
+			}
 			// var_dump(bin2hex(substr($stderr,279,30)),$endPos);die("HEX");
 			// var_dump($stderr,$endPos);die("PAIN");
 			assert ( $endPos !== FALSE ); // should always be more after this with CURLOPT_VERBOSE.. (connection left intact / connecton dropped /whatever)
@@ -681,7 +685,7 @@ class hhb_curl {
 			$endPos = strpos ( $stderr, $CrLf . $CrLf );
 			if($endPos===false){
 				//ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
-				$endPos=strpos($stderr,$Lf."<\x20".$CrLf);
+				$endPos=strpos($stderr,$Lf.$CrLf);
 			}
 			assert ( $endPos !== FALSE ); // should always be more after this with CURLOPT_VERBOSE.. (connection left intact / connecton dropped /whatever)
 			$headers = substr ( $stderr, 0, $endPos );
