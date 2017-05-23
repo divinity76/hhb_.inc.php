@@ -1,4 +1,5 @@
 <?php
+// Warning: this php5 version is (probably) not actively maintained. (unlike the php7 version)
 //declare(strict_types=1);
 
 function hhb_tohtml($str) {
