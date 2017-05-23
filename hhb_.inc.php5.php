@@ -1,6 +1,4 @@
 <?php
-
-$x = 2;
 //declare(strict_types=1);
 
 function hhb_tohtml($str) {
