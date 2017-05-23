@@ -624,7 +624,7 @@ class hhb_curl {
 		$this->_prepare_curl ();
 	}
 	
-	function setopt_array($options) {//: bool {
+	function setopt_array(array $options) {//: bool {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
