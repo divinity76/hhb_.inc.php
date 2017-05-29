@@ -484,8 +484,8 @@ class hhb_curl {
 		$this->curlh = $newcurl;
 		$this->_prepare_curl ();
 	}
-	static function init(string $url = null): hhb_curl {
-		return new hhb_curl ( $url );
+	static function init(string $url = null, bool $insecureAndComfortableByDefault = false): hhb_curl {
+		return new hhb_curl ( $url, $insecureAndComfortableByDefault );
 	}
 	function __construct(string $url = null, bool $insecureAndComfortableByDefault = false) {
 		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given

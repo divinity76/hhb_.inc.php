@@ -506,8 +506,8 @@ class hhb_curl {
 		$this->_prepare_curl ();
 	}
 	
-	static function init($url = null) { // : hhb_curl {
-		return new hhb_curl ( $url );
+	static function init($url = null, $insecureAndComfortableByDefault = false) { // : hhb_curl {
+		return new hhb_curl ( $url, $insecureAndComfortableByDefault );
 	}
 	
 	function __construct($url = null, $insecureAndComfortableByDefault = false) {
