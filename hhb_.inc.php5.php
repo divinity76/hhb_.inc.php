@@ -102,7 +102,7 @@ function hhb_var_dump() {
 	$settings ['debug_hhb_var_dump'] = false; // if true, may throw exceptions on errors..
 	$settings ['use_xdebug_var_dump'] = true; // try to use xdebug_var_dump (instead of var_dump) if available?
 	$settings ['analyze_sourcecode'] = true; // false to disable the source code analyze stuff.
-	                                          // (it will fallback to making $settings['analyze_sourcecode']=false, if it fail to analyze the code, anyway..)
+	                                         // (it will fallback to making $settings['analyze_sourcecode']=false, if it fail to analyze the code, anyway..)
 	$settings ['hhb_var_dump_prepend'] = 'HHB_VAR_DUMP_START' . $PHP_EOL;
 	$settings ['hhb_var_dump_append'] = 'HHB_VAR_DUMP_END' . $PHP_EOL;
 	// </settings>
@@ -190,7 +190,7 @@ function hhb_var_dump() {
 			}
 			;
 			$xTokenArray = array_values ( $xTokenArray ); // fixing the keys..
-			                                           // die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,'before:',count(token_get_all($xsource),COUNT_NORMAL),'after',count($xTokenArray,COUNT_NORMAL)));
+			                                              // die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,'before:',count(token_get_all($xsource),COUNT_NORMAL),'after',count($xTokenArray,COUNT_NORMAL)));
 			unset ( $tmpstr, $xKey, $xToken, $toUnset, $tmpUnsetKeyArray );
 			// </trim$xTokenArray>
 			$firstInterestingLineTokenKey = - 1;
@@ -321,8 +321,8 @@ function hhb_var_dump() {
 			// </rebuildInterestingSourceCode>
 		} catch ( Exception $ex ) {
 			$argvSourceCode = array (); // clear it
-			                               // TODO: failed to read source code
-			                               // die("TODO N STUFF..".__FILE__.__LINE__);
+			                            // TODO: failed to read source code
+			                            // die("TODO N STUFF..".__FILE__.__LINE__);
 			$analyze_sourcecode = false; // ERROR..
 			if ($settings ['debug_hhb_var_dump']) {
 				throw $ex;
@@ -510,7 +510,7 @@ class hhb_curl {
 		return new hhb_curl ( $url );
 	}
 	
-	function __construct($url = null) {
+	function __construct($url = null, $insecureAndComfortableByDefault = false) {
 		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given
 		if (! $this->curlh) {
 			throw new RuntimeException ( 'curl_init failed!' );
@@ -540,6 +540,9 @@ class hhb_curl {
 		$this->stderr_file_handle = $fhandles [3]; // CURLOPT_STDERR
 		unset ( $fhandles );
 		$this->_prepare_curl ();
+		if ($insecureAndComfortableByDefault) {
+			$this->_setComfortableOptions ();
+		}
 	}
 	
 	function __destruct() {

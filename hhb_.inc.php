@@ -487,7 +487,7 @@ class hhb_curl {
 	static function init(string $url = null): hhb_curl {
 		return new hhb_curl ( $url );
 	}
-	function __construct(string $url = null) {
+	function __construct(string $url = null, bool $insecureAndComfortableByDefault = false) {
 		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given
 		if (! $this->curlh) {
 			throw new RuntimeException ( 'curl_init failed!' );
@@ -514,6 +514,9 @@ class hhb_curl {
 		$this->stderr_file_handle = $fhandles [3]; // CURLOPT_STDERR
 		unset ( $fhandles );
 		$this->_prepare_curl ();
+		if ($insecureAndComfortableByDefault) {
+			$this->_setComfortableOptions ();
+		}
 	}
 	function __destruct() {
 		curl_close ( $this->curlh );
