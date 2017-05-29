@@ -1,482 +1,470 @@
 <?php
 // Warning: this php5 version is (probably) not actively maintained. (unlike the php7 version)
-//declare(strict_types=1);
+// declare(strict_types=1);
 
 function hhb_tohtml($str) {
-    return htmlentities($str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true);
+	return htmlentities ( $str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true );
 }
 
 function hhb_mustbe($type, $variable) {
-    //should it be UnexpectedValueException or InvalidArgumentException?
-    //going with UnexpectedValueException for now...
-    if ($type === 'ip') {
-        $dbg = filter_var($variable, FILTER_VALIDATE_IP);
-        if ($dbg === false) {
-            throw new UnexpectedValueException('variable is NOT a valid ip address!');
-        }
+	// should it be UnexpectedValueException or InvalidArgumentException?
+	// going with UnexpectedValueException for now...
+	if ($type === 'ip') {
+		$dbg = filter_var ( $variable, FILTER_VALIDATE_IP );
+		if ($dbg === false) {
+			throw new UnexpectedValueException ( 'variable is NOT a valid ip address!' );
+		}
 		
-        return $variable;
-    } 
-	else if ($type === 'ipv4') {
-        $dbg = filter_var($variable, FILTER_VALIDATE_IP, array(
-            'flags' => FILTER_FLAG_IPV4,
-            'options' => array(
-                'default' => false
-            )
-        ));
-        if ($dbg === false) {
-            throw new UnexpectedValueException('variable is NOT a valid ipv4 address!');
-        }
+		return $variable;
+	} else if ($type === 'ipv4') {
+		$dbg = filter_var ( $variable, FILTER_VALIDATE_IP, array (
+				'flags' => FILTER_FLAG_IPV4,
+				'options' => array (
+						'default' => false 
+				) 
+		) );
+		if ($dbg === false) {
+			throw new UnexpectedValueException ( 'variable is NOT a valid ipv4 address!' );
+		}
 		
-        return $variable;
-    } 
-	else if ($type === 'ipv6') {
-        $dbg = filter_var($variable, FILTER_VALIDATE_IP, array(
-            'flags' => FILTER_FLAG_IPV6,
-            'options' => array(
-                'default' => false
-            )
-        ));
-        if ($dbg === false) {
-            throw new UnexpectedValueException('variable is NOT a valid ipv6 address!');
-        }
-        return $variable;
-    }
+		return $variable;
+	} else if ($type === 'ipv6') {
+		$dbg = filter_var ( $variable, FILTER_VALIDATE_IP, array (
+				'flags' => FILTER_FLAG_IPV6,
+				'options' => array (
+						'default' => false 
+				) 
+		) );
+		if ($dbg === false) {
+			throw new UnexpectedValueException ( 'variable is NOT a valid ipv6 address!' );
+		}
+		return $variable;
+	}
 	
-    $actual_type = gettype($variable);
-    if ($actual_type === 'unknown type') {
-        //i dont know how this can happen, but it is documented as a possible return value of gettype...
-        throw new Exception('could not determine the type of the variable!');
-    }
-    if ($actual_type === 'object') {
-        if (!is_a($variable, $type)) {
-            $dbg = get_class($variable);
-            throw new UnexpectedValueException('variable is an object which does NOT implement class: ' . $type . '. it is of class: ' . $dbg);
-        }
-        return $variable;
-    }
-    if ($actual_type === 'resource') {
-        $dbg = get_resource_type($variable);
-        if ($dbg !== $type) {
-            throw new UnexpectedValueException('variable is a resource, which is NOT of type: ' . $type . '. it is of type: ' . $dbg);
-        }
-        return $variable;
-    }
+	$actual_type = gettype ( $variable );
+	if ($actual_type === 'unknown type') {
+		// i dont know how this can happen, but it is documented as a possible return value of gettype...
+		throw new Exception ( 'could not determine the type of the variable!' );
+	}
+	if ($actual_type === 'object') {
+		if (! is_a ( $variable, $type )) {
+			$dbg = get_class ( $variable );
+			throw new UnexpectedValueException ( 'variable is an object which does NOT implement class: ' . $type . '. it is of class: ' . $dbg );
+		}
+		return $variable;
+	}
+	if ($actual_type === 'resource') {
+		$dbg = get_resource_type ( $variable );
+		if ($dbg !== $type) {
+			throw new UnexpectedValueException ( 'variable is a resource, which is NOT of type: ' . $type . '. it is of type: ' . $dbg );
+		}
+		return $variable;
+	}
 	
-    //now a few special cases
-    if ($type === 'bool') {
-        $parsed_type = 'boolean';
-    } 
-	else if ($type === 'int') {
-        $parsed_type = 'integer';
-    } 
-	else if ($type === 'float') {
-        $parsed_type = 'double';
-    } 
-	else if ($type === 'null') {
-        $parsed_type = 'NULL';
-    } 
-	else {
-        $parsed_type = $type;
-    }
+	// now a few special cases
+	if ($type === 'bool') {
+		$parsed_type = 'boolean';
+	} else if ($type === 'int') {
+		$parsed_type = 'integer';
+	} else if ($type === 'float') {
+		$parsed_type = 'double';
+	} else if ($type === 'null') {
+		$parsed_type = 'NULL';
+	} else {
+		$parsed_type = $type;
+	}
 	
-    if ($parsed_type !== $actual_type && $type !== $actual_type) {
-        throw new UnexpectedValueException('variable is NOT of type: ' . $type . '. it is of type: ' . $actual_type);
-    }
-    //ok, variable passed all tests.
-    return $variable;
+	if ($parsed_type !== $actual_type && $type !== $actual_type) {
+		throw new UnexpectedValueException ( 'variable is NOT of type: ' . $type . '. it is of type: ' . $actual_type );
+	}
+	// ok, variable passed all tests.
+	return $variable;
 }
 
 function hhb_var_dump() {
-    //informative wrapper for var_dump
-    //<changelog>
-    //version 5 ( 1372510379573 )
-    //v5, fixed warnings on PHP < 5.0.2 (PHP_EOL not defined),
-    //also we can use xdebug_var_dump when available now. tested working with 5.0.0 to 5.5.0beta2 (thanks to http://viper-7.com and http://3v4l.org )
-    //and fixed a (corner-case) bug with "0" (empty() considders string("0") to be empty, this caused a bug in sourcecode analyze)
-    //v4, now (tries to) tell you the source code that lead to the variables
-    //v3, HHB_VAR_DUMP_START and HHB_VAR_DUMP_END .
-    //v2, now compat with.. PHP5.0 + i think? tested down to 5.2.17 (previously only 5.4.0+ worked)
-    //</changelog>
-    //<settings>
-    $settings = array();
-    $PHP_EOL  = "\n";
-    if (defined('PHP_EOL')) { //for PHP >=5.0.2 ...
-        $PHP_EOL = PHP_EOL;
-    }
-    
-    $settings['debug_hhb_var_dump']   = false; //if true, may throw exceptions on errors..
-    $settings['use_xdebug_var_dump']  = true; //try to use xdebug_var_dump (instead of var_dump) if available?
-    $settings['analyze_sourcecode']   = true; //false to disable the source code analyze stuff.
-    //(it will fallback to making $settings['analyze_sourcecode']=false, if it fail to analyze the code, anyway..)
-    $settings['hhb_var_dump_prepend'] = 'HHB_VAR_DUMP_START' . $PHP_EOL;
-    $settings['hhb_var_dump_append']  = 'HHB_VAR_DUMP_END' . $PHP_EOL;
-    //</settings>
-    
-    $settings['use_xdebug_var_dump'] = ($settings['use_xdebug_var_dump'] && is_callable("xdebug_var_dump"));
-    $argv                            = func_get_args();
-    $argc                            = count($argv, COUNT_NORMAL);
+	// informative wrapper for var_dump
+	// <changelog>
+	// version 5 ( 1372510379573 )
+	// v5, fixed warnings on PHP < 5.0.2 (PHP_EOL not defined),
+	// also we can use xdebug_var_dump when available now. tested working with 5.0.0 to 5.5.0beta2 (thanks to http://viper-7.com and http://3v4l.org )
+	// and fixed a (corner-case) bug with "0" (empty() considders string("0") to be empty, this caused a bug in sourcecode analyze)
+	// v4, now (tries to) tell you the source code that lead to the variables
+	// v3, HHB_VAR_DUMP_START and HHB_VAR_DUMP_END .
+	// v2, now compat with.. PHP5.0 + i think? tested down to 5.2.17 (previously only 5.4.0+ worked)
+	// </changelog>
+	// <settings>
+	$settings = array ();
+	$PHP_EOL = "\n";
+	if (defined ( 'PHP_EOL' )) { // for PHP >=5.0.2 ...
+		$PHP_EOL = PHP_EOL;
+	}
 	
-    if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-    } 
-	else if (version_compare(PHP_VERSION, '5.3.6', '>=')) {
-        $bt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    } 
-	else if (version_compare(PHP_VERSION, '5.2.5', '>=')) {
-        $bt = debug_backtrace(false);
-    } 
-	else {
-        $bt = debug_backtrace();
-    }
-    ;
-    $analyze_sourcecode = $settings['analyze_sourcecode'];
-    //later, $analyze_sourcecode will be compared with $config['analyze_sourcecode']
-    //to determine if the reason was an error analyzing, or if it was disabled..
-    $bt                 = $bt[0];
-    //<analyzeSourceCode>
-    if ($analyze_sourcecode) {
-        $argvSourceCode = array(
-            0 => 'ignore [0]...'
-        );
-        try {
-            if (version_compare(PHP_VERSION, '5.2.2', '<')) {
-                throw new Exception("PHP version is <5.2.2 .. see token_get_all changelog..");
-            }
-            ;
-            $xsource = file_get_contents($bt['file']);
-            if (empty($xsource)) {
-                throw new Exception('cant get the source of ' . $bt['file']);
-            }
-            ;
-            $xsource .= "\n<" . '?' . 'php ignore_this_hhb_var_dump_workaround();'; //workaround, making sure that at least 1 token is an array, and has the $tok[2] >= line of hhb_var_dump
-            $xTokenArray      = token_get_all($xsource);
-            //<trim$xTokenArray>
-            $tmpstr           = '';
-            $tmpUnsetKeyArray = array();
-            ForEach ($xTokenArray as $xKey => $xToken) {
-                if (is_array($xToken)) {
-                    if (!array_key_exists(1, $xToken)) {
-                        throw new LogicException('Impossible situation? $xToken is_array, but does not have $xToken[1] ...');
-                    }
-                    $tmpstr = trim($xToken[1]);
-                    if (empty($tmpstr) && $tmpstr !== '0' /*string("0") is considered "empty" -.-*/ ) {
-                        $tmpUnsetKeyArray[] = $xKey;
-                        continue;
-                    }
-                    ;
-                    switch ($xToken[0]) {
-                        case T_COMMENT:
-                        case T_DOC_COMMENT: //T_ML_COMMENT in PHP4 -.-
-                        case T_INLINE_HTML: {
-                            $tmpUnsetKeyArray[] = $xKey;
-                            continue;
-                        };
-                        default: {
-                            continue;
-                        }
-                    }
-                } 
-				else if (is_string($xToken)) {
-                    $tmpstr = trim($xToken);
-                    if (empty($tmpstr) && $tmpstr !== '0' /*string("0") is considered "empty" -.-*/ ) {
-                        $tmpUnsetKeyArray[] = $xKey;
-                    }
-                    ;
-                    continue;
-                } 
-				else {
-                    //should be unreachable..
-                    //failed both is_array() and is_string() ???
-                    throw new LogicException('Impossible! $xToken fails both is_array() and is_string() !! .. ');
-                }
-                ;
-            }
-            ;
-            ForEach ($tmpUnsetKeyArray as $toUnset) {
-                unset($xTokenArray[$toUnset]);
-            }
-            ;
-            $xTokenArray = array_values($xTokenArray); //fixing the keys..
-            //die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,'before:',count(token_get_all($xsource),COUNT_NORMAL),'after',count($xTokenArray,COUNT_NORMAL)));
-            unset($tmpstr, $xKey, $xToken, $toUnset, $tmpUnsetKeyArray);
-            //</trim$xTokenArray>
-            $firstInterestingLineTokenKey = -1;
-            $lastInterestingLineTokenKey  = -1;
-            //<find$lastInterestingLineTokenKey>
-            ForEach ($xTokenArray as $xKey => $xToken) {
-                if (!is_array($xToken) || !array_key_exists(2, $xToken) || !is_integer($xToken[2]) || $xToken[2] < $bt['line'])
-                    continue;
-                $tmpkey = $xKey; //we don't got what we want yet..
-                while (true) {
-                    if (!array_key_exists($tmpkey, $xTokenArray)) {
-                        throw new Exception('1unable to find $lastInterestingLineTokenKey !');
-                    }
-                    ;
-                    if ($xTokenArray[$tmpkey] === ';') {
-                        //var_dump(__LINE__.":SUCCESS WITH",$tmpkey,$xTokenArray[$tmpkey]);
-                        $lastInterestingLineTokenKey = $tmpkey;
-                        break;
-                    }
-                    //var_dump(__LINE__.":FAIL WITH ",$tmpkey,$xTokenArray[$tmpkey]);
-                    
-                    //if $xTokenArray has >=PHP_INT_MAX keys, we don't want an infinite loop, do we? ;p
-                    //i wonder how much memory that would require though.. over-engineering, err, time-wasting, ftw?
-                    if ($tmpkey >= PHP_INT_MAX) {
-                        throw new Exception('2unable to find $lastIntperestingLineTokenKey ! (PHP_INT_MAX reached without finding ";"...)');
-                    }
-                    ;
-                    ++$tmpkey;
-                }
-                break;
-            }
-            ;
-            if ($lastInterestingLineTokenKey <= -1) {
-                throw new Exception('3unable to find $lastInterestingLineTokenKey !');
-            }
-            ;
-            unset($xKey, $xToken, $tmpkey);
-            //</find$lastInterestingLineTokenKey>
-            //<find$firstInterestingLineTokenKey>
-            //now work ourselves backwards from $lastInterestingLineTokenKey to the first token where $xTokenArray[$tmpi][1] == "hhb_var_dump"
-            //i doubt this is fool-proof but.. cant think of a better way (in userland, anyway) atm..
-            $tmpi = $lastInterestingLineTokenKey;
-            do {
-                if (array_key_exists($tmpi, $xTokenArray) && is_array($xTokenArray[$tmpi]) && array_key_exists(1, $xTokenArray[$tmpi]) && is_string($xTokenArray[$tmpi][1]) && strcasecmp($xTokenArray[$tmpi][1], $bt['function']) === 0) {
-                    //var_dump(__LINE__."SUCCESS WITH",$tmpi,$xTokenArray[$tmpi]);
-                    if (!array_key_exists($tmpi + 2, $xTokenArray)) { //+2 because [0] is (or should be) "hhb_var_dump" and [1] is (or should be) "("
-                        throw new Exception('1unable to find the $firstInterestingLineTokenKey...');
-                    }
-                    ;
-                    $firstInterestingLineTokenKey = $tmpi + 2;
-                    break;
-                    /**/
-                }
-                ;
-                //var_dump(__LINE__."FAIL WITH ",$tmpi,$xTokenArray[$tmpi]);
-                --$tmpi;
-            } while (-1 < $tmpi);
-            //die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,$tmpi));
-            if ($firstInterestingLineTokenKey <= -1) {
-                throw new Exception('2unable to find the $firstInterestingLineTokenKey...');
-            }
-            ;
-            unset($tmpi);
-            //Note: $lastInterestingLineTokeyKey is likely to contain more stuff than only the stuff we want..
-            //</find$firstInterestingLineTokenKey>
-            //<rebuildInterestingSourceCode>
-            //ok, now we have $firstInterestingLineTokenKey and $lastInterestingLineTokenKey....
-            $interestingTokensArray = array_slice($xTokenArray, $firstInterestingLineTokenKey, (($lastInterestingLineTokenKey - $firstInterestingLineTokenKey) + 1));
-            unset($addUntil, $tmpi, $tmpstr, $tmpi, $argvsourcestr, $tmpkey, $xTokenKey, $xToken);
-            $addUntil      = array();
-            $tmpi          = 0;
-            $tmpstr        = "";
-            $tmpkey        = "";
-            $argvsourcestr = "";
-            //$argvSourceCode[X]='source code..';
-            ForEach ($interestingTokensArray as $xTokenKey => $xToken) {
-                if (is_array($xToken)) {
-                    $tmpstr = $xToken[1];
-                    //var_dump($xToken[1]);
-                } else if (is_string($xToken)) {
-                    $tmpstr = $xToken;
-                    //var_dump($xToken);
-                } else {
-                    /*should never reach this */
-                    throw new LogicException('Impossible situation? $xToken fails is_array() and fails is_string() ...');
-                }
-                ;
-                $argvsourcestr .= $tmpstr;
-                
-                
-                if ($xToken === '(') {
-                    $addUntil[] = ')';
-                    continue;
-                } else if ($xToken === '[') {
-                    $addUntil[] = ']';
-                    continue;
-                }
-                ;
-                
-                if ($xToken === ')' || $xToken === ']') {
-                    if (false === ($tmpkey = array_search($xToken, $addUntil, false))) {
-                        $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the ")"
-                        if (count($argvSourceCode, COUNT_NORMAL) - 1 === $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
-                            break;
-                            /*We read em all! :D (.. i hope)*/
-                        }
-                        ;
-                        /*else... oh crap*/
-                        throw new Exception('failed to read source code of (what i think is) argv[' . count($argvSourceCode, COUNT_NORMAL) . '] ! sorry..');
-                    }
-                    unset($addUntil[$tmpkey]);
-                    continue;
-                }
-                
-                if (empty($addUntil) && $xToken === ',') {
-                    $argvSourceCode[] = substr($argvsourcestr, 0, -1); //-1 is to strip the comma
-                    $argvsourcestr    = "";
-                }
-                ;
-            }
-            ;
-            //die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,
-            //$firstInterestingLineTokenKey,$lastInterestingLineTokenKey,$interestingTokensArray,$tmpstr
-            //$argvSourceCode));
-            if (count($argvSourceCode, COUNT_NORMAL) - 1 != $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
-                throw new Exception('failed to read source code of all the arguments! (and idk which ones i missed)! sorry..');
-            }
-            ;
-            //</rebuildInterestingSourceCode>
-        }
-        catch (Exception $ex) {
-            $argvSourceCode     = array(); //clear it
-            //TODO: failed to read source code
-            //die("TODO N STUFF..".__FILE__.__LINE__);
-            $analyze_sourcecode = false; //ERROR..
-            if ($settings['debug_hhb_var_dump']) {
-                throw $ex;
-            } 
-			else {
-                /*exception ignored, continue as normal without $analyze_sourcecode */
-            }
-            ;
-        }
-        unset($xsource, $xToken, $xTokenArray, $firstInterestingLineTokenKey, $lastInterestingLineTokenKey, $xTokenKey, $tmpi, $tmpkey, $argvsourcestr);
-    }
-    ;
-    //</analyzeSourceCode>
-    $msg = $settings['hhb_var_dump_prepend'];
-    if ($analyze_sourcecode != $settings['analyze_sourcecode']) {
-        $msg .= ' (PS: some error analyzing source code)' . $PHP_EOL;
-    }
-    ;
-    $msg .= 'in "' . $bt['file'] . '": on line "' . $bt['line'] . '": ' . $argc . ' variable' . ($argc === 1 ? '' : 's') . $PHP_EOL; //because over-engineering ftw?
-    if ($analyze_sourcecode) {
-        $msg .= ' hhb_var_dump(';
-        $msg .= implode(",", array_slice($argvSourceCode, 1)); //$argvSourceCode[0] is bullshit.
-        $msg .= ')' . $PHP_EOL;
-    }
-    //array_unshift($bt,$msg);
-    echo $msg;
-    $i = 0;
-    foreach ($argv as &$val) {
-        echo 'argv[' . ++$i . ']';
-        if ($analyze_sourcecode) {
-            echo ' >>>' . $argvSourceCode[$i] . '<<<';
-        }
-        echo ':';
+	$settings ['debug_hhb_var_dump'] = false; // if true, may throw exceptions on errors..
+	$settings ['use_xdebug_var_dump'] = true; // try to use xdebug_var_dump (instead of var_dump) if available?
+	$settings ['analyze_sourcecode'] = true; // false to disable the source code analyze stuff.
+	                                          // (it will fallback to making $settings['analyze_sourcecode']=false, if it fail to analyze the code, anyway..)
+	$settings ['hhb_var_dump_prepend'] = 'HHB_VAR_DUMP_START' . $PHP_EOL;
+	$settings ['hhb_var_dump_append'] = 'HHB_VAR_DUMP_END' . $PHP_EOL;
+	// </settings>
+	
+	$settings ['use_xdebug_var_dump'] = ($settings ['use_xdebug_var_dump'] && is_callable ( "xdebug_var_dump" ));
+	$argv = func_get_args ();
+	$argc = count ( $argv, COUNT_NORMAL );
+	
+	if (version_compare ( PHP_VERSION, '5.4.0', '>=' )) {
+		$bt = debug_backtrace ( DEBUG_BACKTRACE_IGNORE_ARGS, 1 );
+	} else if (version_compare ( PHP_VERSION, '5.3.6', '>=' )) {
+		$bt = debug_backtrace ( DEBUG_BACKTRACE_IGNORE_ARGS );
+	} else if (version_compare ( PHP_VERSION, '5.2.5', '>=' )) {
+		$bt = debug_backtrace ( false );
+	} else {
+		$bt = debug_backtrace ();
+	}
+	;
+	$analyze_sourcecode = $settings ['analyze_sourcecode'];
+	// later, $analyze_sourcecode will be compared with $config['analyze_sourcecode']
+	// to determine if the reason was an error analyzing, or if it was disabled..
+	$bt = $bt [0];
+	// <analyzeSourceCode>
+	if ($analyze_sourcecode) {
+		$argvSourceCode = array (
+				0 => 'ignore [0]...' 
+		);
+		try {
+			if (version_compare ( PHP_VERSION, '5.2.2', '<' )) {
+				throw new Exception ( "PHP version is <5.2.2 .. see token_get_all changelog.." );
+			}
+			;
+			$xsource = file_get_contents ( $bt ['file'] );
+			if (empty ( $xsource )) {
+				throw new Exception ( 'cant get the source of ' . $bt ['file'] );
+			}
+			;
+			$xsource .= "\n<" . '?' . 'php ignore_this_hhb_var_dump_workaround();'; // workaround, making sure that at least 1 token is an array, and has the $tok[2] >= line of hhb_var_dump
+			$xTokenArray = token_get_all ( $xsource );
+			// <trim$xTokenArray>
+			$tmpstr = '';
+			$tmpUnsetKeyArray = array ();
+			ForEach ( $xTokenArray as $xKey => $xToken ) {
+				if (is_array ( $xToken )) {
+					if (! array_key_exists ( 1, $xToken )) {
+						throw new LogicException ( 'Impossible situation? $xToken is_array, but does not have $xToken[1] ...' );
+					}
+					$tmpstr = trim ( $xToken [1] );
+					if (empty ( $tmpstr ) && $tmpstr !== '0' /*string("0") is considered "empty" -.-*/ ) {
+						$tmpUnsetKeyArray [] = $xKey;
+						continue;
+					}
+					;
+					switch ($xToken [0]) {
+						case T_COMMENT :
+						case T_DOC_COMMENT : // T_ML_COMMENT in PHP4 -.-
+						case T_INLINE_HTML :
+							{
+								$tmpUnsetKeyArray [] = $xKey;
+								continue;
+							}
+							;
+						default :
+							{
+								continue;
+							}
+					}
+				} else if (is_string ( $xToken )) {
+					$tmpstr = trim ( $xToken );
+					if (empty ( $tmpstr ) && $tmpstr !== '0' /*string("0") is considered "empty" -.-*/ ) {
+						$tmpUnsetKeyArray [] = $xKey;
+					}
+					;
+					continue;
+				} else {
+					// should be unreachable..
+					// failed both is_array() and is_string() ???
+					throw new LogicException ( 'Impossible! $xToken fails both is_array() and is_string() !! .. ' );
+				}
+				;
+			}
+			;
+			ForEach ( $tmpUnsetKeyArray as $toUnset ) {
+				unset ( $xTokenArray [$toUnset] );
+			}
+			;
+			$xTokenArray = array_values ( $xTokenArray ); // fixing the keys..
+			                                           // die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,'before:',count(token_get_all($xsource),COUNT_NORMAL),'after',count($xTokenArray,COUNT_NORMAL)));
+			unset ( $tmpstr, $xKey, $xToken, $toUnset, $tmpUnsetKeyArray );
+			// </trim$xTokenArray>
+			$firstInterestingLineTokenKey = - 1;
+			$lastInterestingLineTokenKey = - 1;
+			// <find$lastInterestingLineTokenKey>
+			ForEach ( $xTokenArray as $xKey => $xToken ) {
+				if (! is_array ( $xToken ) || ! array_key_exists ( 2, $xToken ) || ! is_integer ( $xToken [2] ) || $xToken [2] < $bt ['line'])
+					continue;
+				$tmpkey = $xKey; // we don't got what we want yet..
+				while ( true ) {
+					if (! array_key_exists ( $tmpkey, $xTokenArray )) {
+						throw new Exception ( '1unable to find $lastInterestingLineTokenKey !' );
+					}
+					;
+					if ($xTokenArray [$tmpkey] === ';') {
+						// var_dump(__LINE__.":SUCCESS WITH",$tmpkey,$xTokenArray[$tmpkey]);
+						$lastInterestingLineTokenKey = $tmpkey;
+						break;
+					}
+					// var_dump(__LINE__.":FAIL WITH ",$tmpkey,$xTokenArray[$tmpkey]);
+					
+					// if $xTokenArray has >=PHP_INT_MAX keys, we don't want an infinite loop, do we? ;p
+					// i wonder how much memory that would require though.. over-engineering, err, time-wasting, ftw?
+					if ($tmpkey >= PHP_INT_MAX) {
+						throw new Exception ( '2unable to find $lastIntperestingLineTokenKey ! (PHP_INT_MAX reached without finding ";"...)' );
+					}
+					;
+					++ $tmpkey;
+				}
+				break;
+			}
+			;
+			if ($lastInterestingLineTokenKey <= - 1) {
+				throw new Exception ( '3unable to find $lastInterestingLineTokenKey !' );
+			}
+			;
+			unset ( $xKey, $xToken, $tmpkey );
+			// </find$lastInterestingLineTokenKey>
+			// <find$firstInterestingLineTokenKey>
+			// now work ourselves backwards from $lastInterestingLineTokenKey to the first token where $xTokenArray[$tmpi][1] == "hhb_var_dump"
+			// i doubt this is fool-proof but.. cant think of a better way (in userland, anyway) atm..
+			$tmpi = $lastInterestingLineTokenKey;
+			do {
+				if (array_key_exists ( $tmpi, $xTokenArray ) && is_array ( $xTokenArray [$tmpi] ) && array_key_exists ( 1, $xTokenArray [$tmpi] ) && is_string ( $xTokenArray [$tmpi] [1] ) && strcasecmp ( $xTokenArray [$tmpi] [1], $bt ['function'] ) === 0) {
+					// var_dump(__LINE__."SUCCESS WITH",$tmpi,$xTokenArray[$tmpi]);
+					if (! array_key_exists ( $tmpi + 2, $xTokenArray )) { // +2 because [0] is (or should be) "hhb_var_dump" and [1] is (or should be) "("
+						throw new Exception ( '1unable to find the $firstInterestingLineTokenKey...' );
+					}
+					;
+					$firstInterestingLineTokenKey = $tmpi + 2;
+					break;
+					/* */
+				}
+				;
+				// var_dump(__LINE__."FAIL WITH ",$tmpi,$xTokenArray[$tmpi]);
+				-- $tmpi;
+			} while ( - 1 < $tmpi );
+			// die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,$tmpi));
+			if ($firstInterestingLineTokenKey <= - 1) {
+				throw new Exception ( '2unable to find the $firstInterestingLineTokenKey...' );
+			}
+			;
+			unset ( $tmpi );
+			// Note: $lastInterestingLineTokeyKey is likely to contain more stuff than only the stuff we want..
+			// </find$firstInterestingLineTokenKey>
+			// <rebuildInterestingSourceCode>
+			// ok, now we have $firstInterestingLineTokenKey and $lastInterestingLineTokenKey....
+			$interestingTokensArray = array_slice ( $xTokenArray, $firstInterestingLineTokenKey, (($lastInterestingLineTokenKey - $firstInterestingLineTokenKey) + 1) );
+			unset ( $addUntil, $tmpi, $tmpstr, $tmpi, $argvsourcestr, $tmpkey, $xTokenKey, $xToken );
+			$addUntil = array ();
+			$tmpi = 0;
+			$tmpstr = "";
+			$tmpkey = "";
+			$argvsourcestr = "";
+			// $argvSourceCode[X]='source code..';
+			ForEach ( $interestingTokensArray as $xTokenKey => $xToken ) {
+				if (is_array ( $xToken )) {
+					$tmpstr = $xToken [1];
+					// var_dump($xToken[1]);
+				} else if (is_string ( $xToken )) {
+					$tmpstr = $xToken;
+					// var_dump($xToken);
+				} else {
+					/* should never reach this */
+					throw new LogicException ( 'Impossible situation? $xToken fails is_array() and fails is_string() ...' );
+				}
+				;
+				$argvsourcestr .= $tmpstr;
+				
+				if ($xToken === '(') {
+					$addUntil [] = ')';
+					continue;
+				} else if ($xToken === '[') {
+					$addUntil [] = ']';
+					continue;
+				}
+				;
+				
+				if ($xToken === ')' || $xToken === ']') {
+					if (false === ($tmpkey = array_search ( $xToken, $addUntil, false ))) {
+						$argvSourceCode [] = substr ( $argvsourcestr, 0, - 1 ); // -1 is to strip the ")"
+						if (count ( $argvSourceCode, COUNT_NORMAL ) - 1 === $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
+							break;
+							/* We read em all! :D (.. i hope) */
+						}
+						;
+						/* else... oh crap */
+						throw new Exception ( 'failed to read source code of (what i think is) argv[' . count ( $argvSourceCode, COUNT_NORMAL ) . '] ! sorry..' );
+					}
+					unset ( $addUntil [$tmpkey] );
+					continue;
+				}
+				
+				if (empty ( $addUntil ) && $xToken === ',') {
+					$argvSourceCode [] = substr ( $argvsourcestr, 0, - 1 ); // -1 is to strip the comma
+					$argvsourcestr = "";
+				}
+				;
+			}
+			;
+			// die(var_dump('die(var_dump(...)) in '.__FILE__.':'.__LINE__,
+			// $firstInterestingLineTokenKey,$lastInterestingLineTokenKey,$interestingTokensArray,$tmpstr
+			// $argvSourceCode));
+			if (count ( $argvSourceCode, COUNT_NORMAL ) - 1 != $argc) /*-1 because $argvSourceCode[0] is bullshit*/ {
+				throw new Exception ( 'failed to read source code of all the arguments! (and idk which ones i missed)! sorry..' );
+			}
+			;
+			// </rebuildInterestingSourceCode>
+		} catch ( Exception $ex ) {
+			$argvSourceCode = array (); // clear it
+			                               // TODO: failed to read source code
+			                               // die("TODO N STUFF..".__FILE__.__LINE__);
+			$analyze_sourcecode = false; // ERROR..
+			if ($settings ['debug_hhb_var_dump']) {
+				throw $ex;
+			} else {
+				/* exception ignored, continue as normal without $analyze_sourcecode */
+			}
+			;
+		}
+		unset ( $xsource, $xToken, $xTokenArray, $firstInterestingLineTokenKey, $lastInterestingLineTokenKey, $xTokenKey, $tmpi, $tmpkey, $argvsourcestr );
+	}
+	;
+	// </analyzeSourceCode>
+	$msg = $settings ['hhb_var_dump_prepend'];
+	if ($analyze_sourcecode != $settings ['analyze_sourcecode']) {
+		$msg .= ' (PS: some error analyzing source code)' . $PHP_EOL;
+	}
+	;
+	$msg .= 'in "' . $bt ['file'] . '": on line "' . $bt ['line'] . '": ' . $argc . ' variable' . ($argc === 1 ? '' : 's') . $PHP_EOL; // because over-engineering ftw?
+	if ($analyze_sourcecode) {
+		$msg .= ' hhb_var_dump(';
+		$msg .= implode ( ",", array_slice ( $argvSourceCode, 1 ) ); // $argvSourceCode[0] is bullshit.
+		$msg .= ')' . $PHP_EOL;
+	}
+	// array_unshift($bt,$msg);
+	echo $msg;
+	$i = 0;
+	foreach ( $argv as &$val ) {
+		echo 'argv[' . ++ $i . ']';
+		if ($analyze_sourcecode) {
+			echo ' >>>' . $argvSourceCode [$i] . '<<<';
+		}
+		echo ':';
 		
-        if ($settings['use_xdebug_var_dump']) {
-            xdebug_var_dump($val);
-        } 
-		else {
-            var_dump($val);
-        }
-        ;
-    }
-    
-    echo $settings['hhb_var_dump_append'];
-    //call_user_func_array("var_dump",$args);
+		if ($settings ['use_xdebug_var_dump']) {
+			xdebug_var_dump ( $val );
+		} else {
+			var_dump ( $val );
+		}
+		;
+	}
+	
+	echo $settings ['hhb_var_dump_append'];
+	// call_user_func_array("var_dump",$args);
 }
-function hhb_return_var_dump() {//:string //works like var_dump, but returns a string instead of printing it.
-
-    $args = func_get_args(); //for <5.3.0 support ...
-    ob_start();
-    call_user_func_array('var_dump', $args);
-    return ob_get_clean();
-} 
+function hhb_return_var_dump() { // :string //works like var_dump, but returns a string instead of printing it.
+	
+	$args = func_get_args (); // for <5.3.0 support ...
+	ob_start ();
+	call_user_func_array ( 'var_dump', $args );
+	return ob_get_clean ();
+}
 
 ;
-function hhb_bin2readable($data, $min_text_len = 3, $readable_min = 0x40, $readable_max = 0x7E) { //:string
-//TODO: better output..
-    $ret    = "";
-    $strbuf = "";
-    $i      = 0;
-    for ($i = 0; $i < strlen($data); ++$i) {
-        if ($min_text_len > 0 && ord($data[$i]) >= $readable_min && ord($data[$i]) <= $readable_max) {
-            $strbuf .= $data[$i];
-            continue;
-        }
-        if (strlen($strbuf) >= $min_text_len && $min_text_len > 0) {
-            $ret .= " " . $strbuf . " ";
-        } elseif (strlen($strbuf) > 0 && $min_text_len > 0) {
-            $ret .= bin2hex($strbuf);
-        }
-        $strbuf = "";
-        $ret .= bin2hex($data[$i]);
-    }
-    if (strlen($strbuf) >= $min_text_len && $min_text_len > 0) {
-        $ret .= " " . $strbuf . " ";
-    } elseif (strlen($strbuf) > 0 && $min_text_len > 0) {
-        $ret .= bin2hex($strbuf);
-    }
-    $strbuf = "";
-    return $ret;
+function hhb_bin2readable($data, $min_text_len = 3, $readable_min = 0x40, $readable_max = 0x7E) { // :string
+                                                                                                  // TODO: better output..
+	$ret = "";
+	$strbuf = "";
+	$i = 0;
+	for($i = 0; $i < strlen ( $data ); ++ $i) {
+		if ($min_text_len > 0 && ord ( $data [$i] ) >= $readable_min && ord ( $data [$i] ) <= $readable_max) {
+			$strbuf .= $data [$i];
+			continue;
+		}
+		if (strlen ( $strbuf ) >= $min_text_len && $min_text_len > 0) {
+			$ret .= " " . $strbuf . " ";
+		} elseif (strlen ( $strbuf ) > 0 && $min_text_len > 0) {
+			$ret .= bin2hex ( $strbuf );
+		}
+		$strbuf = "";
+		$ret .= bin2hex ( $data [$i] );
+	}
+	if (strlen ( $strbuf ) >= $min_text_len && $min_text_len > 0) {
+		$ret .= " " . $strbuf . " ";
+	} elseif (strlen ( $strbuf ) > 0 && $min_text_len > 0) {
+		$ret .= bin2hex ( $strbuf );
+	}
+	$strbuf = "";
+	return $ret;
 }
 
 function hhb_init() {
-    static $firstrun=true;
-    if($firstrun!==true){
-    	return;
-    }
-    $firstrun=false;
-    error_reporting(E_ALL);
-    set_error_handler("hhb_exception_error_handler");
-    //	ini_set("log_errors",'On');
-    //	ini_set("display_errors",'On');
-    //	ini_set("log_errors_max_len",'0');
-    //	ini_set("error_prepend_string",'<error>');
-    //	ini_set("error_append_string",'</error>'.PHP_EOL);
-    //	ini_set("error_log",__DIR__.DIRECTORY_SEPARATOR.'error_log.php.txt');
-    assert_options(ASSERT_ACTIVE, 1);
-    assert_options(ASSERT_WARNING, 0);
-    assert_options(ASSERT_QUIET_EVAL, 1);
-    assert_options(ASSERT_CALLBACK, 'hhb_assert_handler');
+	static $firstrun = true;
+	if ($firstrun !== true) {
+		return;
+	}
+	$firstrun = false;
+	error_reporting ( E_ALL );
+	set_error_handler ( "hhb_exception_error_handler" );
+	// ini_set("log_errors",'On');
+	// ini_set("display_errors",'On');
+	// ini_set("log_errors_max_len",'0');
+	// ini_set("error_prepend_string",'<error>');
+	// ini_set("error_append_string",'</error>'.PHP_EOL);
+	// ini_set("error_log",__DIR__.DIRECTORY_SEPARATOR.'error_log.php.txt');
+	assert_options ( ASSERT_ACTIVE, 1 );
+	assert_options ( ASSERT_WARNING, 0 );
+	assert_options ( ASSERT_QUIET_EVAL, 1 );
+	assert_options ( ASSERT_CALLBACK, 'hhb_assert_handler' );
 }
 
 function hhb_exception_error_handler($errno, $errstr, $errfile, $errline) {
-    if (!(error_reporting() & $errno)) {
-        // This error code is not included in error_reporting
-        return;
-    }
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+	if (! (error_reporting () & $errno)) {
+		// This error code is not included in error_reporting
+		return;
+	}
+	throw new ErrorException ( $errstr, 0, $errno, $errfile, $errline );
 }
 
 function hhb_assert_handler($file, $line, $code, $desc = null) {
-    $errstr='Assertion failed at '.$file.':'.$line.' '.$desc.' code: '.$code;
-    throw new ErrorException($errstr,0,1,$file,$line);
+	$errstr = 'Assertion failed at ' . $file . ':' . $line . ' ' . $desc . ' code: ' . $code;
+	throw new ErrorException ( $errstr, 0, 1, $file, $line );
 }
 
-function hhb_combine_filepaths( /*...*/ ) { //:string
-    $args = func_get_args();
-    if (count($args) == 0) {
-        return "";
-    }
+function hhb_combine_filepaths( /*...*/ ) { // :string
+	$args = func_get_args ();
+	if (count ( $args ) == 0) {
+		return "";
+	}
 	
-    $ret = "";
-    $i   = 0;
-    foreach ($args as $arg) {
-        ++$i;
-        if ($i != 1) {
-            $ret .= DIRECTORY_SEPARATOR;
-        }
-        $ret .= str_replace((DIRECTORY_SEPARATOR==='/'?'\\':'/'), DIRECTORY_SEPARATOR, $arg) . DIRECTORY_SEPARATOR;
-    }
+	$ret = "";
+	$i = 0;
+	foreach ( $args as $arg ) {
+		++ $i;
+		if ($i != 1) {
+			$ret .= DIRECTORY_SEPARATOR;
+		}
+		$ret .= str_replace ( (DIRECTORY_SEPARATOR === '/' ? '\\' : '/'), DIRECTORY_SEPARATOR, $arg ) . DIRECTORY_SEPARATOR;
+	}
 	
-    while (false !== stripos($ret, DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR)) {
-        $ret = str_replace(DIRECTORY_SEPARATOR.DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $ret);
-    }
+	while ( false !== stripos ( $ret, DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR ) ) {
+		$ret = str_replace ( DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $ret );
+	}
 	
-    if (strlen($ret) < 2) {
-        return $ret; //edge case: a single DIRECTORY_SEPARATOR empty
-    }
+	if (strlen ( $ret ) < 2) {
+		return $ret; // edge case: a single DIRECTORY_SEPARATOR empty
+	}
 	
-    if ($ret[strlen($ret) - 1] === DIRECTORY_SEPARATOR) {
-        $ret = substr($ret, 0, -1);
-    }
+	if ($ret [strlen ( $ret ) - 1] === DIRECTORY_SEPARATOR) {
+		$ret = substr ( $ret, 0, - 1 );
+	}
 	
-    return $ret;
+	return $ret;
 }
 class hhb_curl {
 	protected $curlh;
@@ -518,7 +506,7 @@ class hhb_curl {
 		$this->_prepare_curl ();
 	}
 	
-	static function init($url = null) { //: hhb_curl {
+	static function init($url = null) { // : hhb_curl {
 		return new hhb_curl ( $url );
 	}
 	
@@ -574,27 +562,27 @@ class hhb_curl {
 				CURLOPT_COOKIEFILE => "", // <<makes curl save/load cookies across requests..
 				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
 				CURLOPT_USERAGENT => 'hhb_curl_php; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
-		)); //
-;
+		) ); //
+		;
 	}
-	function errno() {//: int {
+	function errno() { // : int {
 		return curl_errno ( $this->curlh );
 	}
-	function error() {//: string {
+	function error() { // : string {
 		return curl_error ( $this->curlh );
 	}
-	function escape($str) {//: string {
+	function escape($str) { // : string {
 		return curl_escape ( $this->curlh, $str );
 	}
-	function unescape($str) {//: string {
+	function unescape($str) { // : string {
 		return curl_unescape ( $this->curlh, $str );
 	}
-	function exec($url = null) {//: bool {
+	function exec($url = null) { // : bool {
 		$this->truncateFileHandles ();
-		//WARNING: some weird error where curl will fill up the file again with 00's when the file has been truncated
-		//until it is the same size as it was before truncating, then keep appending...
-		//hopefully this _prepare_curl() call will fix that.. (seen on debian 8 on btrfs with curl/7.38.0)
-		$this->_prepare_curl();
+		// WARNING: some weird error where curl will fill up the file again with 00's when the file has been truncated
+		// until it is the same size as it was before truncating, then keep appending...
+		// hopefully this _prepare_curl() call will fix that.. (seen on debian 8 on btrfs with curl/7.38.0)
+		$this->_prepare_curl ();
 		if (is_string ( $url ) && strlen ( $url ) > 0) {
 			$this->setopt ( CURLOPT_URL, $url );
 		}
@@ -607,7 +595,7 @@ class hhb_curl {
 		return $ret;
 	}
 	
-	function file_create($filename, $mimetype = null, $postname = null) {//: CURLFile {
+	function file_create($filename, $mimetype = null, $postname = null) { // : CURLFile {
 		return curl_file_create ( $filename, $mimetype, $postname );
 	}
 	
@@ -615,7 +603,7 @@ class hhb_curl {
 		return curl_getinfo ( $this->curlh, $opt );
 	}
 	
-	function pause($bitmask) {//: int {
+	function pause($bitmask) { // : int {
 		return curl_pause ( $this->curlh, $bitmask );
 	}
 	
@@ -625,26 +613,26 @@ class hhb_curl {
 		$this->_prepare_curl ();
 	}
 	
-	function setopt_array(array $options) {//: bool {
+	function setopt_array(array $options) { // : bool {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
 		return true;
 	}
 	
-	function getResponseBody() {//: string {
+	function getResponseBody() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->response_body_file_handle ) ['uri'] );
 	}
 	
-	function getResponseHeaders() {//: array {
+	function getResponseHeaders() { // : array {
 		$text = file_get_contents ( stream_get_meta_data ( $this->response_headers_file_handle ) ['uri'] );
 		// ...
 		return $this->splitHeaders ( $text );
 	}
 	
-	function getResponsesHeaders() {//: array {
-		// var_dump($this->getStdErr());die();
-		// CONSIDER https://bugs.php.net/bug.php?id=65348
+	function getResponsesHeaders() { // : array {
+	                                 // var_dump($this->getStdErr());die();
+	                                 // CONSIDER https://bugs.php.net/bug.php?id=65348
 		$Cr = "\x0d";
 		$Lf = "\x0a";
 		$CrLf = "\x0d\x0a";
@@ -654,9 +642,9 @@ class hhb_curl {
 		while ( FALSE !== ($startPos = strpos ( $stderr, $Lf . '<' )) ) {
 			$stderr = substr ( $stderr, $startPos + strlen ( $Lf ) );
 			$endPos = strpos ( $stderr, $CrLf . "<\x20" . $CrLf );
-			if($endPos===false){
-				//ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
-				$endPos=strpos($stderr,$Lf."<\x20".$CrLf);
+			if ($endPos === false) {
+				// ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
+				$endPos = strpos ( $stderr, $Lf . "<\x20" . $CrLf );
 			}
 			
 			// var_dump(bin2hex(substr($stderr,279,30)),$endPos);die("HEX");
@@ -696,7 +684,7 @@ class hhb_curl {
 	}
 	
 	// we COULD have a getResponsesCookies too...
-	function getResponseCookies() {//: array {
+	function getResponseCookies() { // : array {
 		$headers = $this->getResponsesHeaders ();
 		$headers_merged = array ();
 		foreach ( $headers as $headers2 ) {
@@ -708,12 +696,12 @@ class hhb_curl {
 		return $this->parseCookies ( $headers_merged );
 	}
 	
-	function getRequestBody() {//: string {
+	function getRequestBody() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->request_body_file_handle ) ['uri'] );
 	}
 	
 	// gets the headers of the LAST request..
-	function getRequestHeaders() {//: array {
+	function getRequestHeaders() { // : array {
 		$requestsHeaders = $this->getRequestsHeaders ();
 		$requestCount = count ( $requestsHeaders );
 		if ($requestCount === 0) {
@@ -723,8 +711,8 @@ class hhb_curl {
 	}
 	
 	// array(0=>array(request1_headers),1=>array(requst2_headers),2=>array(request3_headers))~
-	function getRequestsHeaders() {//: array {
-		// CONSIDER https://bugs.php.net/bug.php?id=65348
+	function getRequestsHeaders() { // : array {
+	                                // CONSIDER https://bugs.php.net/bug.php?id=65348
 		$Cr = "\x0d";
 		$Lf = "\x0a";
 		$CrLf = "\x0d\x0a";
@@ -733,9 +721,9 @@ class hhb_curl {
 		while ( FALSE !== ($startPos = strpos ( $stderr, $Lf . '>' )) ) {
 			$stderr = substr ( $stderr, $startPos + strlen ( $Lf . '>' ) );
 			$endPos = strpos ( $stderr, $CrLf . $CrLf );
-			if($endPos===false){
-				//ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
-				$endPos=strpos($stderr,$Lf.$CrLf);
+			if ($endPos === false) {
+				// ofc, curl has ths quirk where the specific message "* HTTP error before end of send, stop sending" gets appended with LF instead of the usual CRLF for other messages...
+				$endPos = strpos ( $stderr, $Lf . $CrLf );
 			}
 			
 			assert ( $endPos !== FALSE ); // should always be more after this with CURLOPT_VERBOSE.. (connection left intact / connecton dropped /whatever)
@@ -758,20 +746,20 @@ class hhb_curl {
 		return $requests;
 	}
 	
-	function getRequestCookies() {//: array {
+	function getRequestCookies() { // : array {
 		return $this->parseCookies ( $this->getRequestHeaders () );
 	}
 	
-	function getStdErr() {//: string {
+	function getStdErr() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->stderr_file_handle ) ['uri'] );
 	}
 	
-	function getStdOut() {//: string {
-		// alias..
+	function getStdOut() { // : string {
+	                       // alias..
 		return $this->getResponseBody ();
 	}
 	
-	protected function splitHeaders($headerstring) {//: array {
+	protected function splitHeaders($headerstring) { // : array {
 		$headers = preg_split ( "/((\r?\n)|(\r\n?))/", $headerstring );
 		foreach ( $headers as $key => $val ) {
 			if (! strlen ( trim ( $val ) )) {
@@ -782,7 +770,7 @@ class hhb_curl {
 		return $headers;
 	}
 	
-	protected function parseCookies($headers) {//: array {
+	protected function parseCookies($headers) { // : array {
 		$returnCookies = [ ];
 		$grabCookieName = function ($str, &$len) {
 			$len = 0;
@@ -844,7 +832,7 @@ class hhb_curl {
 		return $returnCookies;
 	}
 	
-	function setopt($option, $value) {//: bool {
+	function setopt($option, $value) { // : bool {
 		switch ($option) {
 			case CURLOPT_VERBOSE :
 				{
@@ -895,7 +883,7 @@ class hhb_curl {
 		return $this->_setopt ( $option, $value );
 	}
 	
-	private function _setopt($option, $value) {//: bool {
+	private function _setopt($option, $value) { // : bool {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
@@ -905,22 +893,21 @@ class hhb_curl {
 		return $ret; // true...
 	}
 	
-	function getopt($option, &$isset=NULL) {
+	function getopt($option, &$isset = NULL) {
 		if (array_key_exists ( $option, $this->curloptions )) {
-			$isset=true;
+			$isset = true;
 			return $this->curloptions [$option];
-		} 
-		else {
-			$isset=false;
+		} else {
+			$isset = false;
 			return NULL;
 		}
 	}
 	
-	function strerror($errornum) {//: string {
+	function strerror($errornum) { // : string {
 		return curl_strerror ( $errornum );
 	}
 	
-	function version($age = CURLVERSION_NOW) {//: array {
+	function version($age = CURLVERSION_NOW) { // : array {
 		return curl_version ( $age );
 	}
 	
@@ -955,86 +942,86 @@ class hhb_curl {
 }
 class hhb_bcmath {
 	public $scale = 200;
-	public function __construct($scale=200){
-		$this->scale=$scale;
+	public function __construct($scale = 200) {
+		$this->scale = $scale;
 	}
-	public function add($left_operand, $right_operand, $scale = NULL) {//: string {
+	public function add($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcadd ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	public function comp ( $left_operand , $right_operand, $scale = NULL) //:int
-	{
+	public function comp($left_operand, $right_operand, $scale = NULL) // :int
+{
 		$scale = ($scale != null) ? $scale : $this->scale;
-		$ret = bccomp( $left_operand, $right_operand, $scale );
+		$ret = bccomp ( $left_operand, $right_operand, $scale );
 		return $ret;
 	}
-	public function div($left_operand, $right_operand, $scale = NULL) {//: string {
+	public function div($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
-		$right_operand=$this->bctrim(trim($right_operand));
-		if($right_operand==='0'){
-			throw new DivisionByZeroError();
+		$right_operand = $this->bctrim ( trim ( $right_operand ) );
+		if ($right_operand === '0') {
+			throw new DivisionByZeroError ();
 		}
-		$ret = bcdiv( $left_operand, $right_operand, $scale );
+		$ret = bcdiv ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	public function mod($left_operand, $modulus) {//: string {
+	public function mod($left_operand, $modulus) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
-		$modulus=$this->bctrim(trim($modulus));
-		if($modulus==='0'){
-			//if there was a ModulusByZero error, i would use it
-			throw new DivisionByZeroError();
+		$modulus = $this->bctrim ( trim ( $modulus ) );
+		if ($modulus === '0') {
+			// if there was a ModulusByZero error, i would use it
+			throw new DivisionByZeroError ();
 		}
 		
-		$ret = bcmod( $left_operand, $modulus);
+		$ret = bcmod ( $left_operand, $modulus );
 		return $this->bctrim ( $ret );
 	}
 	
-	public function mul($left_operand, $right_operand, $scale = NULL) {//: string {
+	public function mul($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcmul ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
 	
-	public function pow($left_operand, $right_operand, $scale = NULL) {//: string {
+	public function pow($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcpow ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
 	
-	public function powmod($left_operand, $right_operand, $modulus, $scale=NULL) {//: string {
+	public function powmod($left_operand, $right_operand, $modulus, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
-		$modulus=$this->bctrim(trim($modulus));
-		if($modulus==='0'){
-			//if there was a ModulusByZero error, i would use it
-			throw new DivisionByZeroError();
+		$modulus = $this->bctrim ( trim ( $modulus ) );
+		if ($modulus === '0') {
+			// if there was a ModulusByZero error, i would use it
+			throw new DivisionByZeroError ();
 		}
-		$ret = bcpowmod( $left_operand, $modulus,$modulus,$scale);
+		$ret = bcpowmod ( $left_operand, $modulus, $modulus, $scale );
 		return $this->bctrim ( $ret );
 	}
 	
-	public function scale($scale) {//:bool{
-		$this->scale=$scale;
+	public function scale($scale) { // :bool{
+		$this->scale = $scale;
 		return true;
 	}
 	
-	public function sqrt ( $operand, $scale = NULL ) {
+	public function sqrt($operand, $scale = NULL) {
 		$scale = ($scale != null) ? $scale : $this->scale;
-		if(bccomp($operand, '-1')!==-1){
-			throw new RangeException('tried to get the square root of number below zero!');
+		if (bccomp ( $operand, '-1' ) !== - 1) {
+			throw new RangeException ( 'tried to get the square root of number below zero!' );
 		}
-		$ret = bcsqrt( $left_operand,$scale);
+		$ret = bcsqrt ( $left_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
 	
-	public function sub($left_operand, $right_operand, $scale = NULL) {//: string {
+	public function sub($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcsub ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
 	
-	public static function bctrim($str) {//: string {
-		$str=trim($str);
+	public static function bctrim($str) { // : string {
+		$str = trim ( $str );
 		if (false === strpos ( $str, '.' )) {
 			return $str;
 		}
