@@ -1,6 +1,11 @@
 <?php
 declare(strict_types = 1);
-
+/**
+ * convert any string to valid HTML, as losslessly as possible, assuming UTF-8
+ *
+ * @param string $str        	
+ * @return string
+ */
 function hhb_tohtml(string $str): string {
 	return htmlentities ( $str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true );
 }
@@ -74,7 +79,12 @@ function hhb_mustbe(string $type, $variable)/*:decltype($variable)*/
 	// ok, variable passed all tests.
 	return $variable;
 }
-
+/**
+ * enhanced var_dump
+ *
+ * @param mixed $mixed...        	
+ * @return void
+ */
 function hhb_var_dump() {
 	// informative wrapper for var_dump
 	// <changelog>
@@ -359,7 +369,12 @@ function hhb_var_dump() {
 	echo $settings ['hhb_var_dump_append'];
 	// call_user_func_array("var_dump",$args);
 }
-
+/**
+ * works like var_dump, but returns a string instead of priting it (ob_ based)
+ *
+ * @param mixed $args...        	
+ * @return string
+ */
 function hhb_return_var_dump(): string // works like var_dump, but returns a string instead of printing it.
 {
 	$args = func_get_args (); // for <5.3.0 support ...
@@ -367,8 +382,15 @@ function hhb_return_var_dump(): string // works like var_dump, but returns a str
 	call_user_func_array ( 'var_dump', $args );
 	return ob_get_clean ();
 }
-;
-
+/**
+ * convert a binary string to readable ascii...
+ *
+ * @param string $data        	
+ * @param int $min_text_len        	
+ * @param int $readable_min        	
+ * @param int $readable_max        	
+ * @return string
+ */
 function hhb_bin2readable(string $data, int $min_text_len = 3, int $readable_min = 0x40, int $readable_max = 0x7E): string { // TODO: better output..
 	$ret = "";
 	$strbuf = "";
@@ -394,6 +416,9 @@ function hhb_bin2readable(string $data, int $min_text_len = 3, int $readable_min
 	$strbuf = "";
 	return $ret;
 }
+/**
+ * enables hhb_exception_handler and hhb_assert_handler and sets error_reporting to max
+ */
 function hhb_init() {
 	static $firstrun = true;
 	if ($firstrun !== true) {
@@ -449,7 +474,6 @@ function hhb_combine_filepaths( /*...*/ ):string {
 	}
 	return $ret;
 }
-
 class hhb_curl {
 	protected $curlh;
 	protected $curloptions = [ ];
@@ -468,10 +492,28 @@ class hhb_curl {
 		assert ( true === $trun );
 		return /*true*/;
 	}
-	function _getCurlHandle()/*: curlresource*/ {
+	/**
+	 * returns the internal curl handle
+	 *
+	 * its probably a bad idea to mess with it, you'll probably never want to use this function.
+	 *
+	 * @return resource_curl
+	 */
+	public function _getCurlHandle()/*: curlresource*/ {
 		return $this->curlh;
 	}
-	function _replaceCurl($newcurl, bool $closeold = true) {
+	/**
+	 * replace the internal curl handle with another one...
+	 *
+	 * its probably a bad idea. you'll probably never want to use this function.
+	 *
+	 * @param resource_curl $newcurl        	
+	 * @param bool $closeold        	
+	 * @throws InvalidArgumentsException
+	 *
+	 * @return void
+	 */
+	public function _replaceCurl($newcurl, bool $closeold = true) {
 		if (! is_resource ( $newcurl )) {
 			throw new InvalidArgumentsException ( 'parameter 1 must be a curl resource!' );
 		}
@@ -484,9 +526,22 @@ class hhb_curl {
 		$this->curlh = $newcurl;
 		$this->_prepare_curl ();
 	}
+	/**
+	 * mimics curl_init, using hhb_curl::__construct
+	 *
+	 * @param string $url        	
+	 * @param bool $insecureAndComfortableByDefault        	
+	 * @return hhb_curl
+	 */
 	static function init(string $url = null, bool $insecureAndComfortableByDefault = false): hhb_curl {
 		return new hhb_curl ( $url, $insecureAndComfortableByDefault );
 	}
+	/**
+	 *
+	 * @param string $url        	
+	 * @param bool $insecureAndComfortableByDefault        	
+	 * @throws RuntimeException
+	 */
 	function __construct(string $url = null, bool $insecureAndComfortableByDefault = false) {
 		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given
 		if (! $this->curlh) {
@@ -525,6 +580,11 @@ class hhb_curl {
 		fclose ( $this->request_body_file_handle ); // CURLOPT_INFILE
 		fclose ( $this->stderr_file_handle ); // CURLOPT_STDERR
 	}
+	/**
+	 * sets some insecure, but comfortable settings..
+	 *
+	 * @return void
+	 */
 	function _setComfortableOptions() {
 		$this->setopt_array ( array (
 				CURLOPT_AUTOREFERER => true,
@@ -538,20 +598,48 @@ class hhb_curl {
 				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
 				CURLOPT_USERAGENT => 'hhb_curl_php; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
 		) ); //
-	
 	}
+	/**
+	 * curl_errno — Return the last error number
+	 *
+	 * @return int
+	 */
 	function errno(): int {
 		return curl_errno ( $this->curlh );
 	}
+	/**
+	 * curl_error — Return a string containing the last error
+	 *
+	 * @return string
+	 */
 	function error(): string {
 		return curl_error ( $this->curlh );
 	}
+	/**
+	 * curl_escape — URL encodes the given string
+	 *
+	 * @param string $str        	
+	 * @return string
+	 */
 	function escape(string $str): string {
 		return curl_escape ( $this->curlh, $str );
 	}
+	/**
+	 * curl_unescape — Decodes the given URL encoded string
+	 *
+	 * @param string $str        	
+	 * @return string
+	 */
 	function unescape(string $str): string {
 		return curl_unescape ( $this->curlh, $str );
 	}
+	/**
+	 * executes the curl request (curl_exec)
+	 *
+	 * @param string $url        	
+	 * @throws RuntimeException
+	 * @return bool
+	 */
 	function exec(string $url = null): bool {
 		$this->truncateFileHandles ();
 		// WARNING: some weird error where curl will fill up the file again with 00's when the file has been truncated
@@ -567,35 +655,73 @@ class hhb_curl {
 		}
 		return $ret;
 	}
+	/**
+	 * Create a CURLFile object for use with CURLOPT_POSTFIELDS
+	 *
+	 * @param string $filename        	
+	 * @param string $mimetype        	
+	 * @param string $postname        	
+	 * @return CURLFile
+	 */
 	function file_create(string $filename, string $mimetype = null, string $postname = null): CURLFile {
 		return curl_file_create ( $filename, $mimetype, $postname );
 	}
+	/**
+	 * Get information regarding the last transfer
+	 *
+	 * @param int $opt        	
+	 * @return mixed
+	 */
 	function getinfo(int $opt) {
 		return curl_getinfo ( $this->curlh, $opt );
 	}
+	// pause is explicitly undocumented for now, but it pauses a running transfer
 	function pause(int $bitmask): int {
 		return curl_pause ( $this->curlh, $bitmask );
 	}
+	/**
+	 * Reset all options
+	 */
 	function reset() {
 		curl_reset ( $this->curlh );
 		$this->curloptions = [ ];
 		$this->_prepare_curl ();
 	}
+	/**
+	 * curl_setopt_array — Set multiple options for a cURL transfer
+	 *
+	 * @param array $options        	
+	 * @return bool
+	 */
 	function setopt_array(array $options): bool {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
 		return true;
 	}
+	/**
+	 * gets the last response body
+	 *
+	 * @return string
+	 */
 	function getResponseBody(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->response_body_file_handle ) ['uri'] );
 	}
-	//
+	/**
+	 * returns the response headers of the last request (when auto-following Location-redirect, only the last headers are returned)
+	 *
+	 * @return string[]
+	 */
 	function getResponseHeaders(): array {
 		$text = file_get_contents ( stream_get_meta_data ( $this->response_headers_file_handle ) ['uri'] );
 		// ...
 		return $this->splitHeaders ( $text );
 	}
+	/**
+	 * gets the response headers of all the requets for the last execution (including any Location-redirect autofollow headers)
+	 *
+	 * @return string[][]
+	 */
 	function getResponsesHeaders(): array {
 		// var_dump($this->getStdErr());die();
 		// CONSIDER https://bugs.php.net/bug.php?id=65348
@@ -643,6 +769,11 @@ class hhb_curl {
 		return $responses;
 	}
 	// we COULD have a getResponsesCookies too...
+	/*
+	 * get last response cookies
+	 *
+	 * @return string[]
+	 */
 	function getResponseCookies(): array {
 		$headers = $this->getResponsesHeaders ();
 		$headers_merged = array ();
@@ -653,10 +784,15 @@ class hhb_curl {
 		}
 		return $this->parseCookies ( $headers_merged );
 	}
+	// explicitly undocumented for now..
 	function getRequestBody(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->request_body_file_handle ) ['uri'] );
 	}
-	// gets the headers of the LAST request..
+	/**
+	 * return headers of last execution
+	 *
+	 * @return string[]
+	 */
 	function getRequestHeaders(): array {
 		$requestsHeaders = $this->getRequestsHeaders ();
 		$requestCount = count ( $requestsHeaders );
@@ -666,6 +802,11 @@ class hhb_curl {
 		return $requestsHeaders [$requestCount - 1];
 	}
 	// array(0=>array(request1_headers),1=>array(requst2_headers),2=>array(request3_headers))~
+	/**
+	 * get last execution request headers
+	 *
+	 * @return string[]
+	 */
 	function getRequestsHeaders(): array {
 		// CONSIDER https://bugs.php.net/bug.php?id=65348
 		$Cr = "\x0d";
@@ -696,14 +837,28 @@ class hhb_curl {
 		unset ( $headers, $key, $val, $endPos, $startPos );
 		return $requests;
 	}
+	/**
+	 * return last execution request cookies
+	 *
+	 * @return string[]
+	 */
 	function getRequestCookies(): array {
 		return $this->parseCookies ( $this->getRequestHeaders () );
 	}
+	/**
+	 * get everything curl wrote to stderr of the last execution
+	 *
+	 * @return string
+	 */
 	function getStdErr(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->stderr_file_handle ) ['uri'] );
 	}
+	/**
+	 * alias of getResponseBody
+	 *
+	 * @return string
+	 */
 	function getStdOut(): string {
-		// alias..
 		return $this->getResponseBody ();
 	}
 	protected function splitHeaders(string $headerstring): array {
@@ -770,6 +925,13 @@ class hhb_curl {
 		unset ( $header, $cookiename, $thepos );
 		return $returnCookies;
 	}
+	/**
+	 * Set an option for curl
+	 *
+	 * @param int $option        	
+	 * @param mixed $value        	
+	 * @return bool
+	 */
 	function setopt(int $option, $value): bool {
 		switch ($option) {
 			case CURLOPT_VERBOSE :
@@ -827,6 +989,13 @@ class hhb_curl {
 		$this->curloptions [$option] = $value;
 		return $ret; // true...
 	}
+	/**
+	 * return an option previously given to setopt(_array)
+	 *
+	 * @param int $option        	
+	 * @param bool $isset        	
+	 * @return mixed|NULL
+	 */
 	function getopt(int $option, bool &$isset = NULL) {
 		if (array_key_exists ( $option, $this->curloptions )) {
 			$isset = true;
@@ -836,6 +1005,12 @@ class hhb_curl {
 			return NULL;
 		}
 	}
+	/**
+	 * return a string representation of the given curl error code
+	 * 
+	 * @param int $errornum        	
+	 * @return string
+	 */
 	function strerror(int $errornum): string {
 		return curl_strerror ( $errornum );
 	}
