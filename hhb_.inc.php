@@ -691,13 +691,13 @@ class hhb_curl {
 	 * curl_setopt_array — Set multiple options for a cURL transfer
 	 *
 	 * @param array $options        	
-	 * @return bool
+	 * @return $this
 	 */
 	function setopt_array(array $options): bool {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
-		return true;
+		return $this;
 	}
 	/**
 	 * gets the last response body
