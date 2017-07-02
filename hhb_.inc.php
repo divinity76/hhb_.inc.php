@@ -533,7 +533,7 @@ class hhb_curl {
 	 * @param bool $insecureAndComfortableByDefault        	
 	 * @return hhb_curl
 	 */
-	static function init(string $url = null, bool $insecureAndComfortableByDefault = false): hhb_curl {
+	public static function init(string $url = null, bool $insecureAndComfortableByDefault = false): hhb_curl {
 		return new hhb_curl ( $url, $insecureAndComfortableByDefault );
 	}
 	/**
@@ -585,7 +585,7 @@ class hhb_curl {
 	 *
 	 * @return void
 	 */
-	function _setComfortableOptions() {
+	public function _setComfortableOptions() {
 		$this->setopt_array ( array (
 				CURLOPT_AUTOREFERER => true,
 				CURLOPT_BINARYTRANSFER => true,
@@ -604,7 +604,7 @@ class hhb_curl {
 	 *
 	 * @return int
 	 */
-	function errno(): int {
+	public function errno(): int {
 		return curl_errno ( $this->curlh );
 	}
 	/**
@@ -612,7 +612,7 @@ class hhb_curl {
 	 *
 	 * @return string
 	 */
-	function error(): string {
+	public function error(): string {
 		return curl_error ( $this->curlh );
 	}
 	/**
@@ -621,7 +621,7 @@ class hhb_curl {
 	 * @param string $str        	
 	 * @return string
 	 */
-	function escape(string $str): string {
+	public function escape(string $str): string {
 		return curl_escape ( $this->curlh, $str );
 	}
 	/**
@@ -630,7 +630,7 @@ class hhb_curl {
 	 * @param string $str        	
 	 * @return string
 	 */
-	function unescape(string $str): string {
+	public function unescape(string $str): string {
 		return curl_unescape ( $this->curlh, $str );
 	}
 	/**
@@ -640,7 +640,7 @@ class hhb_curl {
 	 * @throws RuntimeException
 	 * @return $this
 	 */
-	function exec(string $url = null): bool {
+	public function exec(string $url = null): self {
 		$this->truncateFileHandles ();
 		// WARNING: some weird error where curl will fill up the file again with 00's when the file has been truncated
 		// until it is the same size as it was before truncating, then keep appending...
@@ -682,10 +682,11 @@ class hhb_curl {
 	/**
 	 * Reset all options
 	 */
-	function reset() {
+	function reset(): self {
 		curl_reset ( $this->curlh );
 		$this->curloptions = [ ];
 		$this->_prepare_curl ();
+		return $this;
 	}
 	/**
 	 * curl_setopt_array — Set multiple options for a cURL transfer
@@ -694,7 +695,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
-	function setopt_array(array $options): bool {
+	function setopt_array(array $options): self {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
@@ -723,7 +724,7 @@ class hhb_curl {
 	 *
 	 * @return string[][]
 	 */
-	function getResponsesHeaders(): array {
+	public function getResponsesHeaders(): array {
 		// var_dump($this->getStdErr());die();
 		// CONSIDER https://bugs.php.net/bug.php?id=65348
 		$Cr = "\x0d";
@@ -934,7 +935,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
-	function setopt(int $option, $value): bool {
+	function setopt(int $option, $value): self {
 		switch ($option) {
 			case CURLOPT_VERBOSE :
 				{
@@ -990,7 +991,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
-	private function _setopt(int $option, $value): bool {
+	private function _setopt(int $option, $value): self {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
