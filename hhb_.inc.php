@@ -638,7 +638,7 @@ class hhb_curl {
 	 *
 	 * @param string $url        	
 	 * @throws RuntimeException
-	 * @return bool
+	 * @return $this
 	 */
 	function exec(string $url = null): bool {
 		$this->truncateFileHandles ();
@@ -653,7 +653,7 @@ class hhb_curl {
 		if ($this->errno ()) {
 			throw new RuntimeException ( 'curl_exec failed. errno: ' . var_export ( $this->errno (), true ) . ' error: ' . var_export ( $this->error (), true ) );
 		}
-		return $ret;
+		return $this;
 	}
 	/**
 	 * Create a CURLFile object for use with CURLOPT_POSTFIELDS
@@ -1007,13 +1007,21 @@ class hhb_curl {
 	}
 	/**
 	 * return a string representation of the given curl error code
-	 * 
+	 *
+	 * (ps, most of the time you'll probably want to use error() instead of strerror())
+	 *
 	 * @param int $errornum        	
 	 * @return string
 	 */
 	function strerror(int $errornum): string {
 		return curl_strerror ( $errornum );
 	}
+	/**
+	 * gets cURL version information
+	 *
+	 * @param int $age        	
+	 * @return array
+	 */
 	function version(int $age = CURLVERSION_NOW): array {
 		return curl_version ( $age );
 	}
@@ -1025,6 +1033,14 @@ class hhb_curl {
 		$this->_setopt ( CURLOPT_STDERR, $this->stderr_file_handle ); // CURLOPT_STDERR
 		$this->_setopt ( CURLOPT_VERBOSE, true );
 	}
+	/**
+	 * gets the constants name of the given curl options
+	 *
+	 * useful for error messages (instead of "FAILED TO SET CURLOPT 21387" , you can say "FAILED TO SET CURLOPT_VERBOSE" )
+	 *
+	 * @param int $option        	
+	 * @return mixed|boolean
+	 */
 	function _curlopt_name(int $option)/*:mixed(string|false)*/{
 		// thanks to TML for the get_defined_constants trick..
 		// <TML> If you had some specific reason for doing it with your current approach (which is, to me, approaching the problem completely backwards - "I dug a hole! How do I get out!"), it seems that your entire function there could be replaced with: return array_flip(get_defined_constants(true)['curl']);
@@ -1035,6 +1051,14 @@ class hhb_curl {
 			return false;
 		}
 	}
+	/**
+	 * gets the constant number of the given constant name
+	 *
+	 * (what was i thinking!?)
+	 *
+	 * @param string $option        	
+	 * @return mixed|boolean
+	 */
 	function _curlopt_number(string $option)/*:mixed(int|false)*/{
 		// thanks to TML for the get_defined_constants trick..
 		$curldefs = get_defined_constants ( true ) ['curl'];
