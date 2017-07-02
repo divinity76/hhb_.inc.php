@@ -1067,7 +1067,7 @@ class hhb_curl {
 	 * (what was i thinking!?)
 	 *
 	 * @param string $option        	
-	 * @return mixed|boolean
+	 * @return int|boolean
 	 */
 	function _curlopt_number(string $option)/*:mixed(int|false)*/{
 		// thanks to TML for the get_defined_constants trick..
