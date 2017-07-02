@@ -638,7 +638,7 @@ class hhb_curl {
 	 *
 	 * @param string $url        	
 	 * @throws RuntimeException
-	 * @return $this
+	 * @return self
 	 */
 	public function exec(string $url = null): self {
 		$this->truncateFileHandles ();
@@ -693,7 +693,7 @@ class hhb_curl {
 	 *
 	 * @param array $options        	
 	 * @throws InvalidArgumentException
-	 * @return $this
+	 * @return self
 	 */
 	public function setopt_array(array $options): self {
 		foreach ( $options as $option => $value ) {
@@ -933,7 +933,7 @@ class hhb_curl {
 	 * @param int $option        	
 	 * @param mixed $value        	
 	 * @throws InvalidArgumentException
-	 * @return $this
+	 * @return self
 	 */
 	public function setopt(int $option, $value): self {
 		switch ($option) {
@@ -989,7 +989,7 @@ class hhb_curl {
 	 * @param int $option        	
 	 * @param unknown $value        	
 	 * @throws InvalidArgumentException
-	 * @return $this
+	 * @return self
 	 */
 	private function _setopt(int $option, $value): self {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
