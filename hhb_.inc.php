@@ -691,6 +691,7 @@ class hhb_curl {
 	 * curl_setopt_array — Set multiple options for a cURL transfer
 	 *
 	 * @param array $options        	
+	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
 	function setopt_array(array $options): bool {
@@ -930,6 +931,7 @@ class hhb_curl {
 	 *
 	 * @param int $option        	
 	 * @param mixed $value        	
+	 * @throws InvalidArgumentException
 	 * @return bool
 	 */
 	function setopt(int $option, $value): bool {
@@ -981,6 +983,13 @@ class hhb_curl {
 		}
 		return $this->_setopt ( $option, $value );
 	}
+	/**
+	 *
+	 * @param int $option        	
+	 * @param unknown $value        	
+	 * @throws InvalidArgumentException
+	 * @return bool
+	 */
 	private function _setopt(int $option, $value): bool {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
