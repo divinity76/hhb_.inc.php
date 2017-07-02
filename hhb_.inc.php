@@ -932,7 +932,7 @@ class hhb_curl {
 	 * @param int $option        	
 	 * @param mixed $value        	
 	 * @throws InvalidArgumentException
-	 * @return bool
+	 * @return $this
 	 */
 	function setopt(int $option, $value): bool {
 		switch ($option) {
@@ -988,7 +988,7 @@ class hhb_curl {
 	 * @param int $option        	
 	 * @param unknown $value        	
 	 * @throws InvalidArgumentException
-	 * @return bool
+	 * @return $this
 	 */
 	private function _setopt(int $option, $value): bool {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
@@ -996,7 +996,7 @@ class hhb_curl {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
 		}
 		$this->curloptions [$option] = $value;
-		return $ret; // true...
+		return $this;
 	}
 	/**
 	 * return an option previously given to setopt(_array)
