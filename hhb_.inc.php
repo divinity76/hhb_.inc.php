@@ -663,7 +663,7 @@ class hhb_curl {
 	 * @param string $postname        	
 	 * @return CURLFile
 	 */
-	function file_create(string $filename, string $mimetype = null, string $postname = null): CURLFile {
+	public function file_create(string $filename, string $mimetype = null, string $postname = null): CURLFile {
 		return curl_file_create ( $filename, $mimetype, $postname );
 	}
 	/**
@@ -672,17 +672,17 @@ class hhb_curl {
 	 * @param int $opt        	
 	 * @return mixed
 	 */
-	function getinfo(int $opt) {
+	public function getinfo(int $opt) {
 		return curl_getinfo ( $this->curlh, $opt );
 	}
 	// pause is explicitly undocumented for now, but it pauses a running transfer
-	function pause(int $bitmask): int {
+	public function pause(int $bitmask): int {
 		return curl_pause ( $this->curlh, $bitmask );
 	}
 	/**
 	 * Reset all options
 	 */
-	function reset(): self {
+	public function reset(): self {
 		curl_reset ( $this->curlh );
 		$this->curloptions = [ ];
 		$this->_prepare_curl ();
@@ -695,7 +695,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
-	function setopt_array(array $options): self {
+	public function setopt_array(array $options): self {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
@@ -706,7 +706,7 @@ class hhb_curl {
 	 *
 	 * @return string
 	 */
-	function getResponseBody(): string {
+	public function getResponseBody(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->response_body_file_handle ) ['uri'] );
 	}
 	/**
@@ -714,7 +714,7 @@ class hhb_curl {
 	 *
 	 * @return string[]
 	 */
-	function getResponseHeaders(): array {
+	public function getResponseHeaders(): array {
 		$text = file_get_contents ( stream_get_meta_data ( $this->response_headers_file_handle ) ['uri'] );
 		// ...
 		return $this->splitHeaders ( $text );
@@ -776,7 +776,7 @@ class hhb_curl {
 	 *
 	 * @return string[]
 	 */
-	function getResponseCookies(): array {
+	public function getResponseCookies(): array {
 		$headers = $this->getResponsesHeaders ();
 		$headers_merged = array ();
 		foreach ( $headers as $headers2 ) {
@@ -787,7 +787,7 @@ class hhb_curl {
 		return $this->parseCookies ( $headers_merged );
 	}
 	// explicitly undocumented for now..
-	function getRequestBody(): string {
+	public function getRequestBody(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->request_body_file_handle ) ['uri'] );
 	}
 	/**
@@ -795,7 +795,7 @@ class hhb_curl {
 	 *
 	 * @return string[]
 	 */
-	function getRequestHeaders(): array {
+	public function getRequestHeaders(): array {
 		$requestsHeaders = $this->getRequestsHeaders ();
 		$requestCount = count ( $requestsHeaders );
 		if ($requestCount === 0) {
@@ -809,7 +809,7 @@ class hhb_curl {
 	 *
 	 * @return string[]
 	 */
-	function getRequestsHeaders(): array {
+	public function getRequestsHeaders(): array {
 		// CONSIDER https://bugs.php.net/bug.php?id=65348
 		$Cr = "\x0d";
 		$Lf = "\x0a";
@@ -844,7 +844,7 @@ class hhb_curl {
 	 *
 	 * @return string[]
 	 */
-	function getRequestCookies(): array {
+	public function getRequestCookies(): array {
 		return $this->parseCookies ( $this->getRequestHeaders () );
 	}
 	/**
@@ -852,7 +852,7 @@ class hhb_curl {
 	 *
 	 * @return string
 	 */
-	function getStdErr(): string {
+	public function getStdErr(): string {
 		return file_get_contents ( stream_get_meta_data ( $this->stderr_file_handle ) ['uri'] );
 	}
 	/**
@@ -860,7 +860,7 @@ class hhb_curl {
 	 *
 	 * @return string
 	 */
-	function getStdOut(): string {
+	public function getStdOut(): string {
 		return $this->getResponseBody ();
 	}
 	protected function splitHeaders(string $headerstring): array {
@@ -935,7 +935,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return $this
 	 */
-	function setopt(int $option, $value): self {
+	public function setopt(int $option, $value): self {
 		switch ($option) {
 			case CURLOPT_VERBOSE :
 				{
@@ -1006,7 +1006,7 @@ class hhb_curl {
 	 * @param bool $isset        	
 	 * @return mixed|NULL
 	 */
-	function getopt(int $option, bool &$isset = NULL) {
+	public function getopt(int $option, bool &$isset = NULL) {
 		if (array_key_exists ( $option, $this->curloptions )) {
 			$isset = true;
 			return $this->curloptions [$option];
@@ -1023,7 +1023,7 @@ class hhb_curl {
 	 * @param int $errornum        	
 	 * @return string
 	 */
-	function strerror(int $errornum): string {
+	public function strerror(int $errornum): string {
 		return curl_strerror ( $errornum );
 	}
 	/**
@@ -1032,7 +1032,7 @@ class hhb_curl {
 	 * @param int $age        	
 	 * @return array
 	 */
-	function version(int $age = CURLVERSION_NOW): array {
+	public function version(int $age = CURLVERSION_NOW): array {
 		return curl_version ( $age );
 	}
 	private function _prepare_curl() {
@@ -1051,7 +1051,7 @@ class hhb_curl {
 	 * @param int $option        	
 	 * @return mixed|boolean
 	 */
-	function _curlopt_name(int $option)/*:mixed(string|false)*/{
+	public function _curlopt_name(int $option)/*:mixed(string|false)*/{
 		// thanks to TML for the get_defined_constants trick..
 		// <TML> If you had some specific reason for doing it with your current approach (which is, to me, approaching the problem completely backwards - "I dug a hole! How do I get out!"), it seems that your entire function there could be replaced with: return array_flip(get_defined_constants(true)['curl']);
 		$curldefs = array_flip ( get_defined_constants ( true ) ['curl'] );
@@ -1069,7 +1069,7 @@ class hhb_curl {
 	 * @param string $option        	
 	 * @return int|boolean
 	 */
-	function _curlopt_number(string $option)/*:mixed(int|false)*/{
+	public function _curlopt_number(string $option)/*:mixed(int|false)*/{
 		// thanks to TML for the get_defined_constants trick..
 		$curldefs = get_defined_constants ( true ) ['curl'];
 		if (isset ( $curldefs [$option] )) {
