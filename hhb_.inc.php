@@ -583,9 +583,9 @@ class hhb_curl {
 	/**
 	 * sets some insecure, but comfortable settings..
 	 *
-	 * @return void
+	 * @return self
 	 */
-	public function _setComfortableOptions() {
+	public function _setComfortableOptions(): self {
 		$this->setopt_array ( array (
 				CURLOPT_AUTOREFERER => true,
 				CURLOPT_BINARYTRANSFER => true,
@@ -598,6 +598,7 @@ class hhb_curl {
 				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
 				CURLOPT_USERAGENT => 'hhb_curl_php; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
 		) ); //
+		return $this;
 	}
 	/**
 	 * curl_errno — Return the last error number
