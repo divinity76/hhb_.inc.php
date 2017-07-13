@@ -1,11 +1,9 @@
 <?php
 // Warning: this php5 version is (probably) not actively maintained. (unlike the php7 version)
 // declare(strict_types=1);
-
 function hhb_tohtml($str) {
 	return htmlentities ( $str, ENT_QUOTES | ENT_HTML401 | ENT_SUBSTITUTE | ENT_DISALLOWED, 'UTF-8', true );
 }
-
 function hhb_mustbe($type, $variable) {
 	// should it be UnexpectedValueException or InvalidArgumentException?
 	// going with UnexpectedValueException for now...
@@ -80,7 +78,6 @@ function hhb_mustbe($type, $variable) {
 	// ok, variable passed all tests.
 	return $variable;
 }
-
 function hhb_var_dump() {
 	// informative wrapper for var_dump
 	// <changelog>
@@ -368,7 +365,6 @@ function hhb_var_dump() {
 	// call_user_func_array("var_dump",$args);
 }
 function hhb_return_var_dump() { // :string //works like var_dump, but returns a string instead of printing it.
-	
 	$args = func_get_args (); // for <5.3.0 support ...
 	ob_start ();
 	call_user_func_array ( 'var_dump', $args );
@@ -402,7 +398,6 @@ function hhb_bin2readable($data, $min_text_len = 3, $readable_min = 0x40, $reada
 	$strbuf = "";
 	return $ret;
 }
-
 function hhb_init() {
 	static $firstrun = true;
 	if ($firstrun !== true) {
@@ -422,7 +417,6 @@ function hhb_init() {
 	assert_options ( ASSERT_QUIET_EVAL, 1 );
 	assert_options ( ASSERT_CALLBACK, 'hhb_assert_handler' );
 }
-
 function hhb_exception_error_handler($errno, $errstr, $errfile, $errline) {
 	if (! (error_reporting () & $errno)) {
 		// This error code is not included in error_reporting
@@ -430,12 +424,10 @@ function hhb_exception_error_handler($errno, $errstr, $errfile, $errline) {
 	}
 	throw new ErrorException ( $errstr, 0, $errno, $errfile, $errline );
 }
-
 function hhb_assert_handler($file, $line, $code, $desc = null) {
 	$errstr = 'Assertion failed at ' . $file . ':' . $line . ' ' . $desc . ' code: ' . $code;
 	throw new ErrorException ( $errstr, 0, 1, $file, $line );
 }
-
 function hhb_combine_filepaths( /*...*/ ) { // :string
 	$args = func_get_args ();
 	if (count ( $args ) == 0) {
@@ -484,11 +476,9 @@ class hhb_curl {
 		assert ( true === $trun );
 		return /*true*/;
 	}
-	
 	function _getCurlHandle()/*: curlresource*/ {
 		return $this->curlh;
 	}
-	
 	function _replaceCurl($newcurl, $closeold = true) {
 		if (! is_resource ( $newcurl )) {
 			throw new InvalidArgumentsException ( 'parameter 1 must be a curl resource!' );
@@ -505,11 +495,9 @@ class hhb_curl {
 		$this->curlh = $newcurl;
 		$this->_prepare_curl ();
 	}
-	
 	static function init($url = null, $insecureAndComfortableByDefault = false) { // : hhb_curl {
 		return new hhb_curl ( $url, $insecureAndComfortableByDefault );
 	}
-	
 	function __construct($url = null, $insecureAndComfortableByDefault = false) {
 		$this->curlh = curl_init ( '' ); // why empty string? PHP Fatal error: Uncaught TypeError: curl_init() expects parameter 1 to be string, null given
 		if (! $this->curlh) {
@@ -544,7 +532,6 @@ class hhb_curl {
 			$this->_setComfortableOptions ();
 		}
 	}
-	
 	function __destruct() {
 		curl_close ( $this->curlh );
 		fclose ( $this->response_body_file_handle ); // CURLOPT_FILE
@@ -552,7 +539,6 @@ class hhb_curl {
 		fclose ( $this->request_body_file_handle ); // CURLOPT_INFILE
 		fclose ( $this->stderr_file_handle ); // CURLOPT_STDERR
 	}
-	
 	function _setComfortableOptions() {
 		$this->setopt_array ( array (
 				CURLOPT_AUTOREFERER => true,
@@ -566,7 +552,7 @@ class hhb_curl {
 				CURLOPT_ENCODING => "", // << makes curl post all supported encodings, gzip/deflate/etc, makes transfers faster
 				CURLOPT_USERAGENT => 'hhb_curl_php; curl/' . $this->version () ['version'] . ' (' . $this->version () ['host'] . '); php/' . PHP_VERSION 
 		) ); //
-		;
+		return $this;
 	}
 	function errno() { // : int {
 		return curl_errno ( $this->curlh );
@@ -590,49 +576,42 @@ class hhb_curl {
 			$this->setopt ( CURLOPT_URL, $url );
 		}
 		
-		$ret = curl_exec ( $this->curlh );
+		curl_exec ( $this->curlh );
 		if ($this->errno ()) {
 			throw new RuntimeException ( 'curl_exec failed. errno: ' . var_export ( $this->errno (), true ) . ' error: ' . var_export ( $this->error (), true ) );
 		}
 		
-		return $ret;
+		return $this;
 	}
-	
 	function file_create($filename, $mimetype = null, $postname = null) { // : CURLFile {
 		return curl_file_create ( $filename, $mimetype, $postname );
 	}
-	
 	function getinfo($opt) {
 		return curl_getinfo ( $this->curlh, $opt );
 	}
-	
 	function pause($bitmask) { // : int {
 		return curl_pause ( $this->curlh, $bitmask );
 	}
-	
 	function reset() {
 		curl_reset ( $this->curlh );
 		$this->curloptions = [ ];
 		$this->_prepare_curl ();
+		return $this;
 	}
-	
-	function setopt_array(array $options) { // : bool {
+	function setopt_array(array $options) { // : self {
 		foreach ( $options as $option => $value ) {
 			$this->setopt ( $option, $value );
 		}
-		return true;
+		return $this;
 	}
-	
 	function getResponseBody() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->response_body_file_handle ) ['uri'] );
 	}
-	
 	function getResponseHeaders() { // : array {
 		$text = file_get_contents ( stream_get_meta_data ( $this->response_headers_file_handle ) ['uri'] );
 		// ...
 		return $this->splitHeaders ( $text );
 	}
-	
 	function getResponsesHeaders() { // : array {
 	                                 // var_dump($this->getStdErr());die();
 	                                 // CONSIDER https://bugs.php.net/bug.php?id=65348
@@ -698,7 +677,6 @@ class hhb_curl {
 		
 		return $this->parseCookies ( $headers_merged );
 	}
-	
 	function getRequestBody() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->request_body_file_handle ) ['uri'] );
 	}
@@ -748,20 +726,16 @@ class hhb_curl {
 		unset ( $headers, $key, $val, $endPos, $startPos );
 		return $requests;
 	}
-	
 	function getRequestCookies() { // : array {
 		return $this->parseCookies ( $this->getRequestHeaders () );
 	}
-	
 	function getStdErr() { // : string {
 		return file_get_contents ( stream_get_meta_data ( $this->stderr_file_handle ) ['uri'] );
 	}
-	
 	function getStdOut() { // : string {
 	                       // alias..
 		return $this->getResponseBody ();
 	}
-	
 	protected function splitHeaders($headerstring) { // : array {
 		$headers = preg_split ( "/((\r?\n)|(\r\n?))/", $headerstring );
 		foreach ( $headers as $key => $val ) {
@@ -772,7 +746,6 @@ class hhb_curl {
 		
 		return $headers;
 	}
-	
 	protected function parseCookies($headers) { // : array {
 		$returnCookies = [ ];
 		$grabCookieName = function ($str, &$len) {
@@ -834,8 +807,7 @@ class hhb_curl {
 		unset ( $header, $cookiename, $thepos );
 		return $returnCookies;
 	}
-	
-	function setopt($option, $value) { // : bool {
+	function setopt($option, $value) { // : self {
 		switch ($option) {
 			case CURLOPT_VERBOSE :
 				{
@@ -885,17 +857,14 @@ class hhb_curl {
 		
 		return $this->_setopt ( $option, $value );
 	}
-	
-	private function _setopt($option, $value) { // : bool {
+	private function _setopt($option, $value) { // : self {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
 		}
-		
 		$this->curloptions [$option] = $value;
-		return $ret; // true...
+		return $this;
 	}
-	
 	function getopt($option, &$isset = NULL) {
 		if (array_key_exists ( $option, $this->curloptions )) {
 			$isset = true;
@@ -905,15 +874,12 @@ class hhb_curl {
 			return NULL;
 		}
 	}
-	
 	function strerror($errornum) { // : string {
 		return curl_strerror ( $errornum );
 	}
-	
 	function version($age = CURLVERSION_NOW) { // : array {
 		return curl_version ( $age );
 	}
-	
 	private function _prepare_curl() {
 		$this->truncateFileHandles ();
 		$this->_setopt ( CURLOPT_FILE, $this->response_body_file_handle ); // CURLOPT_FILE
@@ -922,7 +888,6 @@ class hhb_curl {
 		$this->_setopt ( CURLOPT_STDERR, $this->stderr_file_handle ); // CURLOPT_STDERR
 		$this->_setopt ( CURLOPT_VERBOSE, true );
 	}
-	
 	function _curlopt_name($option)/*:mixed(string|false)*/{
 		// thanks to TML for the get_defined_constants trick..
 		// <TML> If you had some specific reason for doing it with your current approach (which is, to me, approaching the problem completely backwards - "I dug a hole! How do I get out!"), it seems that your entire function there could be replaced with: return array_flip(get_defined_constants(true)['curl']);
@@ -979,19 +944,16 @@ class hhb_bcmath {
 		$ret = bcmod ( $left_operand, $modulus );
 		return $this->bctrim ( $ret );
 	}
-	
 	public function mul($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcmul ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	
 	public function pow($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcpow ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	
 	public function powmod($left_operand, $right_operand, $modulus, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$modulus = $this->bctrim ( trim ( $modulus ) );
@@ -1002,12 +964,10 @@ class hhb_bcmath {
 		$ret = bcpowmod ( $left_operand, $modulus, $modulus, $scale );
 		return $this->bctrim ( $ret );
 	}
-	
 	public function scale($scale) { // :bool{
 		$this->scale = $scale;
 		return true;
 	}
-	
 	public function sqrt($operand, $scale = NULL) {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		if (bccomp ( $operand, '-1' ) !== - 1) {
@@ -1016,13 +976,11 @@ class hhb_bcmath {
 		$ret = bcsqrt ( $left_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	
 	public function sub($left_operand, $right_operand, $scale = NULL) { // : string {
 		$scale = ($scale != null) ? $scale : $this->scale;
 		$ret = bcsub ( $left_operand, $right_operand, $scale );
 		return $this->bctrim ( $ret );
 	}
-	
 	public static function bctrim($str) { // : string {
 		$str = trim ( $str );
 		if (false === strpos ( $str, '.' )) {
