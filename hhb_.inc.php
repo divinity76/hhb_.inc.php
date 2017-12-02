@@ -1163,3 +1163,155 @@ class hhb_bcmath {
 		return $str;
 	}
 }
+
+/**
+ * needInputVariables: easy way to require variables, give a http 400 Bad Request with good error reports on missing parameters,
+ * and cast the variables to the correct native php type (i use it with extract(needInputVariables(['mail_to'=>'email','i'=>'int','foo'=>'bool','bar','P'])) )
+ *
+ * @param array $variables
+ *        	variables that you require. if key is numeric, any type is accepted, and name is taken from value, otherwise name is taken from key and type is taken from variable.
+ * @param string $inputSources
+ *        	G=$_GET P=$_POST C=$_COOKIE A=$argv (not yet implemented) X=$customSources, and variables are extracted in the order given here.
+ * @param array $customSources
+ *        	(otional)
+ *        	array of custom sources to look through - ignored unless $inputSources contains X.
+ * @throws \LogicException
+ * @throws \InvalidArgumentException
+ * @return array
+ */
+function needInputVariables(array $variables, string $inputSources = 'P', array $customSources = array()): array {
+	$ret = array ();
+	$errors = array ();
+	foreach ( $variables as $key => $type ) {
+		if (is_numeric ( $key )) {
+			$key = $type;
+			$type = ''; // anything
+		}
+		// X (Custom)
+		$found = false;
+		foreach ( str_split ( $inputSources ) as $source ) {
+			switch ($source) {
+				case 'G' : // $_GET
+					{
+						if (array_key_exists ( $key, $_GET )) {
+							$found = true;
+							$val = $_GET [$key];
+							break 2;
+						}
+						break;
+					}
+				case 'P' : // $_POST
+					{
+						if (array_key_exists ( $key, $_POST )) {
+							$found = true;
+							$val = $_POST [$key];
+							break 2;
+						}
+						break;
+					}
+				case 'C' : // $_COOKIE
+					{
+						if (array_key_exists ( $key, $_COOKIE )) {
+							$found = true;
+							$val = $_COOKIE [$key];
+							break 2;
+						}
+						break;
+					}
+				case 'A' : // $argv
+					{
+						throw new \LogicException ( 'FIXME: $argv NOT YET IMPLEMENTED' );
+					}
+				case 'X' : // $customSources
+					{
+						foreach ( $customSources as $customSource ) {
+							if (array_key_exists ( $key, $customSource )) {
+								$found = true;
+								$val = $customSource [$key];
+								break 3;
+							}
+						}
+						break;
+					}
+				default :
+					{
+						throw new \InvalidArgumentException ( 'unknown input source: ' . hhb_return_var_dump ( $source ) );
+					}
+			}
+		}
+		
+		if (! $found) {
+			$errors [] = 'missing parameter: ' . $key;
+			continue;
+		}
+		if ($type === '') {
+			// anything, pass
+		} elseif (substr ( $type, 0, 6 ) === 'string') {
+			if (! is_string ( $val )) {
+				$errors [] = 'following parameter is not a string: ' . $key;
+				continue;
+			}
+			$type = substr ( $type, 6 );
+			if (strlen ( $type )) {
+				if ($type [0] !== '(') {
+					throw \InvalidArgumentException ();
+				}
+				preg_match ( '/(\d+)(?:\,(\d+))?/', $type, $matches );
+				$c = count ( $matches );
+				if ($c > 3) {
+					throw new \InvalidArgumentException ();
+				}
+				if ($c > 2) {
+					$maxLen = $matches [2];
+					if (strlen ( $val ) > $maxLen) {
+						$errors [] = 'following parameter cannot be longer than ' . $maxLen . ' byte(s): ' . $key;
+						continue;
+					}
+				}
+				if ($c > 1) {
+					$minLen = $matches [1];
+					if (strlen ( $val ) < $minLen) {
+						$errors [] = 'following parameter must be at least ' . $minLen . ' byte(s): ' . $key;
+						continue;
+					}
+				}
+			}
+		} elseif ($type === 'bool') {
+			$val = filter_var ( $val, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE );
+			if (NULL === $val) {
+				$errors [] = 'following parameter is not a bool: ' . $key;
+			}
+		} elseif ($type === 'int' || $type === 'integer') {
+			$val = filter_var ( $val, FILTER_VALIDATE_INT );
+			if (false === $val) {
+				$errors [] = 'following parameter is not a integer: ' . $key;
+			}
+		} elseif ($type === 'float' || $type === 'double') {
+			$val = filter_var ( $val, FILTER_VALIDATE_FLOAT );
+			if (false === $val) {
+				$errors [] = 'following parameter is not a float: ' . $key;
+			}
+		} elseif ($type === 'email') {
+			$val = filter_var ( $val, FILTER_VALIDATE_EMAIL, (defined ( 'FILTER_FLAG_EMAIL_UNICODE' ) ? FILTER_FLAG_EMAIL_UNICODE : 0) );
+			if (false === $val) {
+				$errors [] = 'following parameter is not an email: ' . $key;
+			}
+		} elseif ($type === 'ip') {
+			$val = filter_var ( $val, FILTER_VALIDATE_IP );
+			if (false === $val) {
+				$errors [] = 'following parameter is not an ip address: ' . $key;
+			}
+		} else {
+			throw new \InvalidArgumentException ( 'unsupported type: ' . hhb_return_var_dump ( $type ) );
+		}
+		$ret [$key] = $val;
+	}
+	if (empty ( $errors )) {
+		return $ret;
+	}
+	http_response_code ( 400 );
+	header ( "content-type: text/plain;charset=utf8" );
+	echo "HTTP 400 Bad Request: following errors were found: \n";
+	echo json_encode ( $errors, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | (defined ( 'JSON_UNESCAPED_LINE_TERMINATORS' ) ? JSON_UNESCAPED_LINE_TERMINATORS : 0) );
+	die ();
+}
