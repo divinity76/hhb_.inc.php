@@ -3,7 +3,7 @@ declare(strict_types = 1);
 /**
  * convert any string to valid HTML, as losslessly as possible, assuming UTF-8
  *
- * @param string $str        	
+ * @param string $str
  * @return string
  */
 function hhb_tohtml(string $str): string {
@@ -82,7 +82,7 @@ function hhb_mustbe(string $type, $variable)/*:decltype($variable)*/
 /**
  * enhanced var_dump
  *
- * @param mixed $mixed...        	
+ * @param mixed $mixed...
  * @return void
  */
 function hhb_var_dump() {
@@ -372,7 +372,7 @@ function hhb_var_dump() {
 /**
  * works like var_dump, but returns a string instead of priting it (ob_ based)
  *
- * @param mixed $args...        	
+ * @param mixed $args...
  * @return string
  */
 function hhb_return_var_dump(): string // works like var_dump, but returns a string instead of printing it.
@@ -385,10 +385,10 @@ function hhb_return_var_dump(): string // works like var_dump, but returns a str
 /**
  * convert a binary string to readable ascii...
  *
- * @param string $data        	
- * @param int $min_text_len        	
- * @param int $readable_min        	
- * @param int $readable_max        	
+ * @param string $data
+ * @param int $min_text_len
+ * @param int $readable_min
+ * @param int $readable_max
  * @return string
  */
 function hhb_bin2readable(string $data, int $min_text_len = 3, int $readable_min = 0x40, int $readable_max = 0x7E): string { // TODO: better output..
@@ -507,8 +507,8 @@ class hhb_curl {
 	 *
 	 * its probably a bad idea. you'll probably never want to use this function.
 	 *
-	 * @param resource_curl $newcurl        	
-	 * @param bool $closeold        	
+	 * @param resource_curl $newcurl
+	 * @param bool $closeold
 	 * @throws InvalidArgumentsException
 	 *
 	 * @return void
@@ -529,8 +529,8 @@ class hhb_curl {
 	/**
 	 * mimics curl_init, using hhb_curl::__construct
 	 *
-	 * @param string $url        	
-	 * @param bool $insecureAndComfortableByDefault        	
+	 * @param string $url
+	 * @param bool $insecureAndComfortableByDefault
 	 * @return hhb_curl
 	 */
 	public static function init(string $url = null, bool $insecureAndComfortableByDefault = false): hhb_curl {
@@ -538,8 +538,8 @@ class hhb_curl {
 	}
 	/**
 	 *
-	 * @param string $url        	
-	 * @param bool $insecureAndComfortableByDefault        	
+	 * @param string $url
+	 * @param bool $insecureAndComfortableByDefault
 	 * @throws RuntimeException
 	 */
 	function __construct(string $url = null, bool $insecureAndComfortableByDefault = false) {
@@ -619,7 +619,7 @@ class hhb_curl {
 	/**
 	 * curl_escape — URL encodes the given string
 	 *
-	 * @param string $str        	
+	 * @param string $str
 	 * @return string
 	 */
 	public function escape(string $str): string {
@@ -628,7 +628,7 @@ class hhb_curl {
 	/**
 	 * curl_unescape — Decodes the given URL encoded string
 	 *
-	 * @param string $str        	
+	 * @param string $str
 	 * @return string
 	 */
 	public function unescape(string $str): string {
@@ -637,7 +637,7 @@ class hhb_curl {
 	/**
 	 * executes the curl request (curl_exec)
 	 *
-	 * @param string $url        	
+	 * @param string $url
 	 * @throws RuntimeException
 	 * @return self
 	 */
@@ -659,9 +659,9 @@ class hhb_curl {
 	/**
 	 * Create a CURLFile object for use with CURLOPT_POSTFIELDS
 	 *
-	 * @param string $filename        	
-	 * @param string $mimetype        	
-	 * @param string $postname        	
+	 * @param string $filename
+	 * @param string $mimetype
+	 * @param string $postname
 	 * @return CURLFile
 	 */
 	public function file_create(string $filename, string $mimetype = null, string $postname = null): CURLFile {
@@ -670,7 +670,7 @@ class hhb_curl {
 	/**
 	 * Get information regarding the last transfer
 	 *
-	 * @param int $opt        	
+	 * @param int $opt
 	 * @return mixed
 	 */
 	public function getinfo(int $opt) {
@@ -692,7 +692,7 @@ class hhb_curl {
 	/**
 	 * curl_setopt_array — Set multiple options for a cURL transfer
 	 *
-	 * @param array $options        	
+	 * @param array $options
 	 * @throws InvalidArgumentException
 	 * @return self
 	 */
@@ -931,8 +931,8 @@ class hhb_curl {
 	/**
 	 * Set an option for curl
 	 *
-	 * @param int $option        	
-	 * @param mixed $value        	
+	 * @param int $option
+	 * @param mixed $value
 	 * @throws InvalidArgumentException
 	 * @return self
 	 */
@@ -987,8 +987,8 @@ class hhb_curl {
 	}
 	/**
 	 *
-	 * @param int $option        	
-	 * @param unknown $value        	
+	 * @param int $option
+	 * @param unknown $value
 	 * @throws InvalidArgumentException
 	 * @return self
 	 */
@@ -1003,8 +1003,8 @@ class hhb_curl {
 	/**
 	 * return an option previously given to setopt(_array)
 	 *
-	 * @param int $option        	
-	 * @param bool $isset        	
+	 * @param int $option
+	 * @param bool $isset
 	 * @return mixed|NULL
 	 */
 	public function getopt(int $option, bool &$isset = NULL) {
@@ -1021,7 +1021,7 @@ class hhb_curl {
 	 *
 	 * (ps, most of the time you'll probably want to use error() instead of strerror())
 	 *
-	 * @param int $errornum        	
+	 * @param int $errornum
 	 * @return string
 	 */
 	public function strerror(int $errornum): string {
@@ -1030,7 +1030,7 @@ class hhb_curl {
 	/**
 	 * gets cURL version information
 	 *
-	 * @param int $age        	
+	 * @param int $age
 	 * @return array
 	 */
 	public function version(int $age = CURLVERSION_NOW): array {
@@ -1049,7 +1049,7 @@ class hhb_curl {
 	 *
 	 * useful for error messages (instead of "FAILED TO SET CURLOPT 21387" , you can say "FAILED TO SET CURLOPT_VERBOSE" )
 	 *
-	 * @param int $option        	
+	 * @param int $option
 	 * @return mixed|boolean
 	 */
 	public function _curlopt_name(int $option)/*:mixed(string|false)*/{
@@ -1067,7 +1067,7 @@ class hhb_curl {
 	 *
 	 * (what was i thinking!?)
 	 *
-	 * @param string $option        	
+	 * @param string $option
 	 * @return int|boolean
 	 */
 	public function _curlopt_number(string $option)/*:mixed(int|false)*/{
@@ -1301,6 +1301,20 @@ function needInputVariables(array $variables, string $inputSources = 'P', array 
 			if (false === $val) {
 				$errors [] = 'following parameter is not an ip address: ' . $key;
 			}
+		} elseif (is_callable ( $type )) {
+			$req = (new ReflectionFunction ( $type ))->getNumberOfRequiredParameters ();
+			if ($req === 1) {
+				$ret [$key] = $type ( $val );
+			} elseif ($req === 2) {
+				$errstr = '';
+				$ret [$key] = $type ( $val, $errstr );
+				if (! empty ( $errstr )) {
+					$error [] = "parameter \"$key\": $errstr";
+				}
+			} else {
+				throw new \InvalidArgumentException ( "callback validator must accept 1 or 2 parameters, but accepts \"$req\" parameters. (\$input[,&\$errorDescription]){...return \$input}" );
+			}
+			continue;
 		} else {
 			throw new \InvalidArgumentException ( 'unsupported type: ' . hhb_return_var_dump ( $type ) );
 		}
