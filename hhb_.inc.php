@@ -1177,9 +1177,10 @@ class hhb_bcmath {
  *        	array of custom sources to look through - ignored unless $inputSources contains X.
  * @throws \LogicException
  * @throws \InvalidArgumentException
+ * @throws \RuntimeException
  * @return array
  */
-function needInputVariables(array $variables, string $inputSources = 'P', array $customSources = array()): array {
+function needInputVariables(array $variables, string $inputSources = 'P', array $customSources = array(), bool $exceptionMode = false): array {
 	$ret = array ();
 	$errors = array ();
 	foreach ( $variables as $key => $type ) {
@@ -1323,9 +1324,12 @@ function needInputVariables(array $variables, string $inputSources = 'P', array 
 	if (empty ( $errors )) {
 		return $ret;
 	}
+	$errstr = json_encode ( $errors, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | (defined ( 'JSON_UNESCAPED_LINE_TERMINATORS' ) ? JSON_UNESCAPED_LINE_TERMINATORS : 0) );
+	if ($exceptionMode) {
+		throw new \RuntimeException ( $errstr );
+	}
 	http_response_code ( 400 );
 	header ( "content-type: text/plain;charset=utf8" );
 	echo "HTTP 400 Bad Request: following errors were found: \n";
-	echo json_encode ( $errors, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR | (defined ( 'JSON_UNESCAPED_LINE_TERMINATORS' ) ? JSON_UNESCAPED_LINE_TERMINATORS : 0) );
-	die ();
+	echo die ( $errstr );
 }
