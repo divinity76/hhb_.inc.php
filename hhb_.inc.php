@@ -1261,5 +1261,5 @@ function needInputVariables(array $variables, string $inputSources = 'P', array 
 	http_response_code ( 400 );
 	header ( "content-type: text/plain;charset=utf8" );
 	echo "HTTP 400 Bad Request: following errors were found: \n";
-	echo die ( $errstr );
+	die ( $errstr );
 }
