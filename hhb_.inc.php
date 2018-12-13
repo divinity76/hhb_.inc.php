@@ -95,12 +95,12 @@ function hhb_var_dump() {
 						case T_INLINE_HTML :
 							{
 								$tmpUnsetKeyArray [] = $xKey;
-								continue;
+								continue 2;
 							}
 							;
 						default :
 							{
-								continue;
+								continue 2;
 							}
 					}
 				} else if (is_string ( $xToken )) {
