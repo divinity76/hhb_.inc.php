@@ -451,6 +451,7 @@ class hhb_curl {
 			throw new InvalidArgumentsException ( 'parameter 1 must be a curl resource!' );
 		}
 		if ($closeold) {
+			curl_setopt( $this->curlh, CURLOPT_VERBOSE, 0); // workaround for https://bugs.php.net/bug.php?id=78007
 			curl_close ( $this->curlh );
 		}
 		$this->curlh = $newcurl;
@@ -504,6 +505,7 @@ class hhb_curl {
 		}
 	}
 	function __destruct() {
+		curl_setopt( $this->curlh, CURLOPT_VERBOSE, 0); // workaround for https://bugs.php.net/bug.php?id=78007
 		curl_close ( $this->curlh );
 		fclose ( $this->response_body_file_handle ); // CURLOPT_FILE
 		fclose ( $this->response_headers_file_handle ); // CURLOPT_WRITEHEADER
