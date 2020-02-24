@@ -613,7 +613,7 @@ class hhb_curl {
 	 * @param int $opt
 	 * @return mixed
 	 */
-	public function getinfo(int $opt) {
+	public function getinfo(int $opt = null) {
 		return curl_getinfo ( $this->curlh, $opt );
 	}
 	// pause is explicitly undocumented for now, but it pauses a running transfer
