@@ -36,16 +36,32 @@ function to_little_uint32_t(int $i): string {
 function to_big_uint32_t(int $i): string {
 	return pack ( 'N', $i );
 }
-function from_little_uint64_t(string $i): int {
-	$arr = unpack ( 'Puint64_t', $i );
-	return $arr ['uint64_t'];
+/**
+ * convert a (binary) string containing a little-endian uint64_t
+ * to a native php int
+ *
+ * @param string $i
+ * @return int
+ */
+function from_little_uint64_t(string $i): int
+{
+    $arr = unpack('Puint64_t', $i);
+    return $arr['uint64_t'];
 }
+
 function from_big_uint64_t(string $i): int {
 	$arr = unpack ( 'Juint64_t', $i );
 	return $arr ['uint64_t'];
 }
-function to_little_uint64_t(int $i): string {
-	return pack ( 'P', $i );
+/**
+ * convert a native php int to a little-endian uint64_t (binary) string
+ *
+ * @param int $i
+ * @return string
+ */
+function to_little_uint64_t(int $i): string
+{
+    return pack('P', $i);
 }
 function to_big_uint64_t(int $i): string {
 	return pack ( 'J', $i );
