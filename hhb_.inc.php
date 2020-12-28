@@ -970,11 +970,11 @@ class hhb_curl {
 	/**
 	 * gets cURL version information
 	 *
-	 * @param int $age
+	 * @param @deprecated int $age
 	 * @return array
 	 */
 	public function version(int $age = CURLVERSION_NOW): array {
-		return curl_version ( $age );
+		return curl_version ();
 	}
 	private function _prepare_curl() {
 		$this->truncateFileHandles ();
