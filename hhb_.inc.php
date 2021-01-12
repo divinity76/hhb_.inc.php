@@ -932,7 +932,7 @@ class hhb_curl {
 	 * @throws InvalidArgumentException
 	 * @return self
 	 */
-	private function _setopt(int $option, $value): self {
+	protected function _setopt(int $option, $value): self {
 		$ret = curl_setopt ( $this->curlh, $option, $value );
 		if (! $ret) {
 			throw new InvalidArgumentException ( 'curl_setopt failed. errno: ' . $this->errno () . '. error: ' . $this->error () . '. option: ' . var_export ( $this->_curlopt_name ( $option ), true ) . ' (' . var_export ( $option, true ) . '). value: ' . var_export ( $value, true ) );
@@ -976,7 +976,7 @@ class hhb_curl {
 	public function version(int $age = CURLVERSION_NOW): array {
 		return curl_version ();
 	}
-	private function _prepare_curl() {
+	protected function _prepare_curl() {
 		$this->truncateFileHandles ();
 		$this->_setopt ( CURLOPT_FILE, $this->response_body_file_handle ); // CURLOPT_FILE
 		$this->_setopt ( CURLOPT_WRITEHEADER, $this->response_headers_file_handle ); // CURLOPT_WRITEHEADER
