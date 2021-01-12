@@ -414,12 +414,15 @@ class hhb_curl {
 	protected function truncateFileHandles() {
 		$trun = ftruncate ( $this->response_body_file_handle, 0 );
 		assert ( true === $trun );
+		rewind ( $this->response_body_file_handle );
 		$trun = ftruncate ( $this->response_headers_file_handle, 0 );
 		assert ( true === $trun );
+		rewind ( $this->response_headers_file_handle );
 		// $trun = ftruncate ( $this->request_body_file_handle, 0 );
 		// assert ( true === $trun );
 		$trun = ftruncate ( $this->stderr_file_handle, 0 );
 		assert ( true === $trun );
+		rewind ( $this->stderr_file_handle );
 		return /*true*/;
 	}
 	/**
