@@ -14,7 +14,7 @@ function from_little_uint16_t(string $i): int {
 }
 function from_big_uint16_t(string $i): int {
 	$arr = unpack ( 'nuint16_t', $i );
-	return $arr ['nint16_t'];
+	return $arr ['uint16_t'];
 }
 function to_little_uint16_t(int $i): string {
 	return pack ( 'v', $i );
